@@ -140,6 +140,9 @@ const fleetData = [
 const Fleet: React.FC = () => {
   const [filter, setFilter] = useState('Tout');
 
+  // Find the featured car for the highlight section (Peugeot 208, ID 3)
+  const featuredCar = fleetData.find(car => car.id === '3');
+
   const filteredFleet = filter === 'Tout' 
     ? fleetData 
     : fleetData.filter(car => car.tag === filter);
@@ -167,7 +170,7 @@ const Fleet: React.FC = () => {
               Découvrez le mélange parfait d'élégance marocaine et d'ingénierie moderne. La toute nouvelle Peugeot 208 est maintenant disponible pour votre voyage.
             </p>
             <div className="flex gap-4 pt-2">
-              <Link to="/reservation" className="h-12 px-8 rounded-full bg-primary text-text-main font-bold text-sm shadow-lg shadow-primary/30 hover:shadow-primary/50 hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2">
+              <Link to="/reservation" state={{ car: featuredCar }} className="h-12 px-8 rounded-full bg-primary text-text-main font-bold text-sm shadow-lg shadow-primary/30 hover:shadow-primary/50 hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2">
                 Réserver cette Voiture
                 <span className="material-symbols-outlined text-lg">arrow_forward</span>
               </Link>
