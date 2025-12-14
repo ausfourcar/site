@@ -75,6 +75,66 @@ const fleetData = [
     seats: 5,
     tag: 'SUV'
   },
+  {
+    id: '7',
+    name: 'Opel Corsa',
+    category: 'Citadine',
+    price: 299,
+    currency: 'MAD',
+    image: 'https://images.unsplash.com/photo-1609520505218-74218447d2c3?auto=format&fit=crop&w=800&q=80',
+    fuel: 'Essence',
+    transmission: 'Manuelle',
+    seats: 5,
+    tag: 'Ville'
+  },
+  {
+    id: '8',
+    name: 'Kia Picanto',
+    category: 'Économique',
+    price: 249,
+    currency: 'MAD',
+    image: 'https://images.unsplash.com/photo-1566008885218-90abf9200ddb?auto=format&fit=crop&w=800&q=80',
+    fuel: 'Essence',
+    transmission: 'Manuelle',
+    seats: 4,
+    tag: 'Ville'
+  },
+  {
+    id: '9',
+    name: 'Hyundai i20',
+    category: 'Citadine',
+    price: 299,
+    currency: 'MAD',
+    image: 'https://images.unsplash.com/photo-1592198084033-aade902d1aae?auto=format&fit=crop&w=800&q=80',
+    fuel: 'Diesel',
+    transmission: 'Manuelle',
+    seats: 5,
+    tag: 'Ville'
+  },
+  {
+    id: '10',
+    name: 'Hyundai i10',
+    category: 'Citadine',
+    price: 299,
+    currency: 'MAD',
+    image: 'https://images.unsplash.com/photo-1502877338535-766e1452684a?auto=format&fit=crop&w=800&q=80',
+    fuel: 'Essence',
+    transmission: 'Manuelle',
+    seats: 4,
+    tag: 'Ville'
+  },
+  {
+    id: '11',
+    name: 'Volkswagen T-Roc',
+    category: 'SUV',
+    price: 699,
+    currency: 'MAD',
+    image: 'https://images.unsplash.com/photo-1627454819213-f77f3076fc8c?auto=format&fit=crop&w=800&q=80',
+    fuel: 'Diesel',
+    transmission: 'Automatique',
+    seats: 5,
+    tag: 'SUV'
+  }
 ];
 
 const Fleet: React.FC = () => {

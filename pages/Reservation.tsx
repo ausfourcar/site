@@ -37,6 +37,10 @@ const Reservation: React.FC = () => {
   const [days, setDays] = useState(3);
   const [paymentMethod, setPaymentMethod] = useState<'cash' | 'tpe'>('cash');
   
+  // Driver Info State
+  const [driverName, setDriverName] = useState("");
+  const [driverPhone, setDriverPhone] = useState("");
+  
   // Calculate days based on both date and time
   useEffect(() => {
     const start = new Date(`${pickupDate}T${pickupTime}`).getTime();
@@ -84,6 +88,44 @@ const Reservation: React.FC = () => {
     }
   };
 
+  const handleConfirmReservation = () => {
+    // Construct WhatsApp Message
+    const phoneNumber = "212643193316";
+    const extrasText = selectedExtras.length > 0 
+        ? selectedExtras.map(id => extrasData.find(e => e.id === id)?.title).join(', ') 
+        : "Aucun";
+    
+    // Calculations for the message
+    const basePrice = car.price * days;
+    const extrasDailyTotal = extrasData
+      .filter(e => selectedExtras.includes(e.id))
+      .reduce((sum, e) => sum + e.price, 0);
+    const extrasTotal = extrasDailyTotal * days;
+    const taxes = (basePrice + extrasTotal) * 0.20;
+    const grandTotal = basePrice + extrasTotal + taxes;
+
+    const message = `
+*Nouvelle Réservation - Site Web*
+---------------------------
+🚗 *Voiture*: ${car.name}
+📅 *Départ*: ${pickupDate} à ${pickupTime}
+📅 *Retour*: ${dropoffDate} à ${dropoffTime}
+⏳ *Durée*: ${days} Jours
+---------------------------
+👤 *Conducteur*: ${driverName}
+📱 *Tél*: ${driverPhone}
+---------------------------
+➕ *Options*: ${extrasText}
+💳 *Paiement*: ${paymentMethod === 'cash' ? 'Espèces' : 'TPE/Carte'}
+💰 *Total*: ${grandTotal.toFixed(2)} MAD
+---------------------------
+Merci de confirmer la disponibilité.
+    `.trim();
+
+    const encodedMessage = encodeURIComponent(message);
+    window.open(`https://wa.me/${phoneNumber}?text=${encodedMessage}`, '_blank');
+  };
+
   if (!car) {
     return <Navigate to="/fleet" replace />;
   }
@@ -95,7 +137,7 @@ const Reservation: React.FC = () => {
     return new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' }).format(date);
   };
 
-  // Calculations
+  // Calculations for display
   const basePrice = car.price * days;
   const extrasDailyTotal = extrasData
     .filter(e => selectedExtras.includes(e.id))
@@ -287,10 +329,20 @@ const Reservation: React.FC = () => {
               <div className="bg-white rounded-xl p-6 md:p-8 border border-border-color shadow-soft">
                 <h3 className="text-lg font-bold mb-4 font-display">Informations du Conducteur</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-                  <input type="text" placeholder="Prénom" className="h-14 px-4 rounded-xl border border-border-color bg-background-light focus:ring-2 focus:ring-primary focus:border-primary transition-all text-text-main outline-none font-body" />
-                  <input type="text" placeholder="Nom" className="h-14 px-4 rounded-xl border border-border-color bg-background-light focus:ring-2 focus:ring-primary focus:border-primary transition-all text-text-main outline-none font-body" />
-                  <input type="email" placeholder="Adresse Email" className="h-14 px-4 rounded-xl border border-border-color bg-background-light focus:ring-2 focus:ring-primary focus:border-primary transition-all text-text-main outline-none font-body" />
-                  <input type="tel" placeholder="Numéro de Téléphone" className="h-14 px-4 rounded-xl border border-border-color bg-background-light focus:ring-2 focus:ring-primary focus:border-primary transition-all text-text-main outline-none font-body" />
+                  <input 
+                    type="text" 
+                    placeholder="Nom" 
+                    value={driverName}
+                    onChange={(e) => setDriverName(e.target.value)}
+                    className="h-14 px-4 rounded-xl border border-border-color bg-background-light focus:ring-2 focus:ring-primary focus:border-primary transition-all text-text-main outline-none font-body" 
+                  />
+                  <input 
+                    type="tel" 
+                    placeholder="Numéro de Téléphone" 
+                    value={driverPhone}
+                    onChange={(e) => setDriverPhone(e.target.value)}
+                    className="h-14 px-4 rounded-xl border border-border-color bg-background-light focus:ring-2 focus:ring-primary focus:border-primary transition-all text-text-main outline-none font-body" 
+                  />
                 </div>
                 
                 <div className="border-t border-border-color my-8"></div>
@@ -319,8 +371,19 @@ const Reservation: React.FC = () => {
                   {/* TPE Option */}
                   <div 
                     onClick={() => setPaymentMethod('tpe')}
-                    className={`p-4 rounded-xl border-2 cursor-pointer transition-all flex items-center gap-4 ${paymentMethod === 'tpe' ? 'border-primary bg-primary/5 shadow-md' : 'border-border-color bg-white hover:border-primary/30 hover:shadow-sm'}`}
+                    className={`relative p-4 rounded-xl border-2 cursor-pointer transition-all flex items-center gap-4 ${paymentMethod === 'tpe' ? 'border-primary bg-primary/5 shadow-md' : 'border-border-color bg-white hover:border-primary/30 hover:shadow-sm'}`}
                   >
+                    {/* Fee Badge with Tooltip */}
+                    <div className="absolute top-2 right-2 group/badge z-10">
+                        <div className="bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full shadow-sm flex items-center justify-center cursor-help">
+                            2.83%
+                        </div>
+                        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 hidden group-hover/badge:block w-max px-2 py-1 bg-gray-900 text-white text-[10px] rounded shadow-lg animate-in fade-in zoom-in duration-200">
+                            Frais TPE = 2.83%
+                            <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900"></div>
+                        </div>
+                    </div>
+
                     <div className={`size-12 rounded-full flex items-center justify-center transition-colors ${paymentMethod === 'tpe' ? 'bg-primary text-white' : 'bg-background-light text-text-muted'}`}>
                         <span className="material-symbols-outlined text-2xl">credit_card</span>
                     </div>
@@ -398,7 +461,10 @@ const Reservation: React.FC = () => {
                       <span className="text-2xl font-black text-text-main font-display">{grandTotal.toFixed(2)} <span className="text-sm font-medium">MAD</span></span>
                     </div>
                   </div>
-                  <button className="w-full mt-4 h-14 bg-gradient-to-r from-primary to-yellow-400 rounded-full text-text-main font-bold text-lg shadow-soft hover:shadow-lg hover:scale-[1.02] transition-all flex items-center justify-center gap-2 font-display">
+                  <button 
+                    onClick={handleConfirmReservation}
+                    className="w-full mt-4 h-14 bg-gradient-to-r from-primary to-yellow-400 rounded-full text-text-main font-bold text-lg shadow-soft hover:shadow-lg hover:scale-[1.02] transition-all flex items-center justify-center gap-2 font-display"
+                  >
                     Confirmer la Réservation
                     <span className="material-symbols-outlined">arrow_forward</span>
                   </button>
@@ -420,7 +486,7 @@ const Reservation: React.FC = () => {
                     </div>
                     <span className="font-bold text-sm">+212 612 100 800</span>
                   </a>
-                  <a href="#" className="flex items-center gap-3 p-3 rounded-lg bg-white/5 hover:bg-white/10 transition-colors border border-white/10">
+                  <a href="https://wa.me/212643193316" target="_blank" rel="noreferrer" className="flex items-center gap-3 p-3 rounded-lg bg-white/5 hover:bg-white/10 transition-colors border border-white/10">
                     <div className="size-8 rounded-full bg-[#25D366] flex items-center justify-center text-white">
                       <span className="material-symbols-outlined text-sm">chat</span>
                     </div>

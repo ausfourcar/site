@@ -41,8 +41,12 @@ const Contact: React.FC = () => {
                 </div>
                 <div className="flex flex-col gap-1">
                   <h3 className="text-text-muted text-sm font-bold uppercase tracking-wide font-display">Téléphone</h3>
-                  <p className="text-text-main text-2xl font-bold leading-none hover:text-primary-hover transition-colors cursor-pointer font-display">+212 612 100 800</p>
-                  <p className="text-text-muted text-sm mt-1 font-body">Disponible 24/7 pour les demandes urgentes.</p>
+                  <div className="flex flex-col">
+                    <p className="text-text-main text-lg font-bold leading-none hover:text-primary-hover transition-colors cursor-pointer font-display">+212 643 193 316</p>
+                    <p className="text-text-main text-lg font-bold leading-none hover:text-primary-hover transition-colors cursor-pointer font-display mt-2">+212 675 010 606</p>
+                    <p className="text-text-main text-lg font-bold leading-none hover:text-primary-hover transition-colors cursor-pointer font-display mt-2">+212 612 100 800</p>
+                  </div>
+                  <p className="text-text-muted text-sm mt-2 font-body">Disponible 24/7 pour les demandes urgentes.</p>
                 </div>
               </div>
               {/* Contact Item: Address */}
@@ -52,8 +56,8 @@ const Contact: React.FC = () => {
                 </div>
                 <div className="flex flex-col gap-1">
                   <h3 className="text-text-muted text-sm font-bold uppercase tracking-wide font-display">Siège Social</h3>
-                  <p className="text-text-main text-xl font-bold leading-tight font-display">Casablanca, Maroc</p>
-                  <p className="text-text-muted text-sm mt-1 font-body">123 Avenue de Luxe, Quartier Anfa.</p>
+                  <p className="text-text-main text-xl font-bold leading-tight font-display">Oujda, Maroc</p>
+                  <p className="text-text-muted text-sm mt-1 font-body">Nr 366, Lotissement Boustane 2, Oujda 60000</p>
                 </div>
               </div>
               {/* Contact Item: Email */}
@@ -63,23 +67,23 @@ const Contact: React.FC = () => {
                 </div>
                 <div className="flex flex-col gap-1">
                   <h3 className="text-text-muted text-sm font-bold uppercase tracking-wide font-display">Email</h3>
-                  <p className="text-text-main text-xl font-bold leading-tight hover:text-primary-hover transition-colors cursor-pointer font-display">booking@ausfourcar.ma</p>
+                  <p className="text-text-main text-xl font-bold leading-tight hover:text-primary-hover transition-colors cursor-pointer font-display">contact@ausfourcar.ma</p>
                   <p className="text-text-muted text-sm mt-1 font-body">Nous répondons généralement sous 2 heures.</p>
                 </div>
               </div>
             </div>
-            {/* Map Image */}
+            {/* Map Iframe */}
             <div className="relative w-full h-64 md:h-80 rounded-2xl overflow-hidden shadow-sm border border-border-subtle mt-4 group">
-              <img 
-                src="https://lh3.googleusercontent.com/aida-public/AB6AXuDxiatFI6JQoKbbnb7r9HmlnewVGAQAFUhHTE9jQqFlRqIz747VEVbOY0PRf2Uxy_ed-y3Ajr8x-dRKRS5hgHzx9UpdoP8sLVxGiKW-LbKulxjPlo7IkI17vA4mVWSkIWV_3Px3CHOpFhXXGU4WiIcmaZ5fVsnjSYZiwE0JPV5h57e5pvR4E8O5K3m_WuYgdizJFPOPGYYrOYvnIv9Dgp07xJE77u3aEjviOiDJxajG_ds8jskKTr-H0714BMFKHEXpi0vDFaNRREE" 
-                alt="Map visualization" 
-                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 filter grayscale hover:grayscale-0"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-background-light/50 to-transparent pointer-events-none"></div>
-              <div className="absolute bottom-4 left-4 bg-white/90 backdrop-blur px-4 py-2 rounded-lg shadow-sm flex items-center gap-2">
-                <span className="material-symbols-outlined text-text-main text-sm">map</span>
-                <span className="text-xs font-bold text-text-main uppercase tracking-wide">Ouvrir la Carte</span>
-              </div>
+              <iframe 
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d410.05296870430266!2d-1.8860544383394267!3d34.6944904977924!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0xd7863c73d03844f%3A0x7763dc82f276fdd0!2sAusfour%20Car%20Location%20de%20voitures!5e0!3m2!1sfr!2sma!4v1765723683337!5m2!1sfr!2sma" 
+                width="100%" 
+                height="100%" 
+                style={{ border: 0 }} 
+                allowFullScreen={true} 
+                loading="lazy" 
+                referrerPolicy="no-referrer-when-downgrade"
+                title="Ausfour Car Location Map"
+              ></iframe>
             </div>
           </div>
 

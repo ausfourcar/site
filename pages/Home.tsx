@@ -104,9 +104,9 @@ const Home: React.FC = () => {
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-primary/20 via-transparent to-transparent"></div>
             <div className="relative w-full aspect-[4/3] flex items-center justify-center">
               <img 
-                src="https://lh3.googleusercontent.com/aida-public/AB6AXuCkbTqZn3mtzJ-lqOu9rWKUOnsPwR5A9s9Qyw-9ykmwmmWq2zFaT7LZuCl66U1Q9N1UaAR6OpQODBhwE_5Bdk3WgxYKpKNShH3n-NwPnW8bTWZdSWCr6QRIy8dfhYnGrrjqjk5CgssrW_M9t0Rh_XKbuT5WZLojDHpb8SI5S-yL3y9v78Ty93l4CjYKqWps9HWi74ReggRwltgefYEVKh3OkD6kz2EZiTpFWizKFTHJU5D_JUSkrlFouufmMsIcyJZNyRM_Jc8_sFc" 
-                alt="Silver luxury sedan car" 
-                className="object-contain w-full h-full drop-shadow-2xl transition-transform duration-700 ease-out group-hover:scale-105 animate-float"
+                src="https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&w=1000&q=80" 
+                alt="Voyage en voiture au Maroc" 
+                className="object-cover w-full h-full rounded-2xl shadow-2xl transition-transform duration-700 ease-out group-hover:scale-[1.02]"
               />
             </div>
             {/* Floating Badge */}
