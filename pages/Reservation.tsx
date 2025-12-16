@@ -154,7 +154,7 @@ Merci de confirmer la disponibilité.
   const grandTotal = basePrice + extrasTotal + taxes;
 
   return (
-    <div className="min-h-screen bg-background-light pt-36 pb-20">
+    <div className="min-h-screen bg-background-light pt-28 md:pt-36 pb-20">
       {/* Page Header */}
       <div className="bg-white border-b border-border-color py-10">
         <div className="max-w-[1280px] mx-auto px-4 sm:px-8 lg:px-12">
