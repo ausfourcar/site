@@ -20,7 +20,7 @@ const fleetData = [
     category: 'Citadine',
     price: 350,
     currency: 'MAD',
-    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDtOxLmFWFJKVipCf5mTtV0dB9GK2uTp0imGDNOGMS1O_aXbRQx45ZZXn-RW_m4WE_thybu96bDBDn9YmFa401AMfp7hfTe8Was07fJVz9BwRluPzPs0WzjOkCDmEce1bWlELY0w4SE48yvujuiEulFzVMlQ_pFUJOtOom_N0eIfkbo_4_THhR9oe-tBusZZMdJ6GAtvo_qyywxSxS9KdJEzSkl0l5NpPQ9U5yPkNnBOcwar1E8sTVDr6OTz6ZcYUwX4KPLUgLsu4w',
+    image: 'clio24.jpg',
     fuel: 'Diesel',
     transmission: 'Manuelle',
     seats: 5,
@@ -32,7 +32,7 @@ const fleetData = [
     category: 'Citadine',
     price: 400,
     currency: 'MAD',
-    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDtOxLmFWFJKVipCf5mTtV0dB9GK2uTp0imGDNOGMS1O_aXbRQx45ZZXn-RW_m4WE_thybu96bDBDn9YmFa401AMfp7hfTe8Was07fJVz9BwRluPzPs0WzjOkCDmEce1bWlELY0w4SE48yvujuiEulFzVMlQ_pFUJOtOom_N0eIfkbo_4_THhR9oe-tBusZZMdJ6GAtvo_qyywxSxS9KdJEzSkl0l5NpPQ9U5yPkNnBOcwar1E8sTVDr6OTz6ZcYUwX4KPLUgLsu4w',
+    image: 'clio24.jpg',
     fuel: 'Diesel',
     transmission: 'Automatique',
     seats: 5,
@@ -198,7 +198,7 @@ const Fleet: React.FC = () => {
               <span className="material-symbols-outlined text-sm">verified</span>
               Nouvel Arrivage
             </div>
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-display font-bold tracking-tight text-text-main leading-[1.1]">
+            <h1 className="text-4xl md:text-5xl lg:text-7xl font-display font-bold tracking-tight text-text-main leading-[1.1]">
               Conduisez le Futur <br/>
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-accent-orange to-primary bg-[length:200%_auto] animate-pulse">Peugeot 208 GT</span>
             </h1>
@@ -224,8 +224,8 @@ const Fleet: React.FC = () => {
 
       {/* Filter Bar */}
       <div className="sticky top-24 z-40 w-full max-w-7xl">
-        <div className="bg-white/80 backdrop-blur-md rounded-xl shadow-float border border-white/50 p-2 md:p-4 flex flex-col md:flex-row gap-4 items-center justify-between">
-          <div className="flex items-center gap-2 overflow-x-auto w-full md:w-auto scrollbar-hide pb-2 md:pb-0 px-2">
+        <div className="bg-white/80 backdrop-blur-md rounded-xl shadow-float border border-white/50 p-2 md:p-4 flex flex-col md:flex-row gap-4 items-center justify-center">
+          <div className="flex items-center gap-2 overflow-x-auto w-full md:w-auto scrollbar-hide pb-2 md:pb-0 px-2 justify-center">
             {filters.map(f => (
                <button 
                 key={f}
@@ -240,17 +240,6 @@ const Fleet: React.FC = () => {
                 <p className="text-sm font-bold">{f === 'Tout' ? 'Toutes les Voitures' : f}</p>
               </button>
             ))}
-          </div>
-          <div className="flex items-center gap-4 w-full md:w-auto border-t md:border-t-0 border-border-subtle pt-3 md:pt-0 px-2">
-            <div className="flex flex-col w-full md:w-48 gap-1">
-              <div className="flex justify-between text-xs text-text-secondary font-medium">
-                <span>Fourchette de Prix</span>
-                <span>MAD/jour</span>
-              </div>
-              <div className="relative h-1.5 w-full bg-background-light rounded-full overflow-hidden">
-                <div className="absolute top-0 left-0 h-full bg-primary w-2/3 rounded-full"></div>
-              </div>
-            </div>
           </div>
         </div>
       </div>
