@@ -230,21 +230,21 @@ const Fleet: React.FC = () => {
       </div>
 
       {/* Filter Bar */}
-      <div className="sticky top-24 z-40 w-full max-w-7xl">
-        <div className="bg-white/80 backdrop-blur-md rounded-xl shadow-float border border-white/50 p-2 md:p-4 flex flex-col md:flex-row gap-4 items-center justify-center">
-          <div className="flex items-center gap-2 overflow-x-auto w-full md:w-auto scrollbar-hide pb-2 md:pb-0 px-2 justify-center">
+      <div className="sticky top-20 md:top-24 z-40 w-full max-w-7xl">
+        <div className="bg-white/80 backdrop-blur-md rounded-xl shadow-float border border-white/50 p-2 md:p-4 flex flex-col md:flex-row gap-3 md:gap-4 items-stretch md:items-center justify-center">
+          <div className="flex items-center gap-2 overflow-x-auto w-full md:w-auto scrollbar-hide pb-1 md:pb-0 px-1 md:px-2 justify-start md:justify-center">
             {filters.map(f => (
                <button 
                 key={f}
                 onClick={() => setFilter(f)}
-                className={`flex h-10 shrink-0 items-center justify-center gap-x-2 rounded-full px-5 transition-all active:scale-95 border ${
+                className={`flex h-9 md:h-10 shrink-0 items-center justify-center gap-x-2 rounded-full px-4 md:px-5 transition-all active:scale-95 border ${
                   filter === f 
                     ? 'bg-text-main text-white shadow-md border-transparent' 
                     : 'bg-background-light text-text-main border-transparent hover:border-primary/50 hover:bg-white'
                 }`}
               >
-                {f === 'Tout' ? null : <span className="material-symbols-outlined text-lg">{f === 'Ville' ? 'directions_car' : f === 'SUV' ? 'airport_shuttle' : 'diamond'}</span>}
-                <p className="text-sm font-bold">{f === 'Tout' ? 'Toutes les Voitures' : f}</p>
+                {f === 'Tout' ? null : <span className="material-symbols-outlined text-base md:text-lg">{f === 'Ville' ? 'directions_car' : f === 'SUV' ? 'airport_shuttle' : 'diamond'}</span>}
+                <p className="text-xs md:text-sm font-bold whitespace-nowrap">{f === 'Tout' ? 'Toutes les Voitures' : f}</p>
               </button>
             ))}
           </div>
