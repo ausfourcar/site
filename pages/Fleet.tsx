@@ -27,6 +27,18 @@ const fleetData = [
     tag: 'Ville'
   },
   {
+    id: '12',
+    name: 'Renault Clio 5 Auto',
+    category: 'Citadine',
+    price: 400,
+    currency: 'MAD',
+    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDtOxLmFWFJKVipCf5mTtV0dB9GK2uTp0imGDNOGMS1O_aXbRQx45ZZXn-RW_m4WE_thybu96bDBDn9YmFa401AMfp7hfTe8Was07fJVz9BwRluPzPs0WzjOkCDmEce1bWlELY0w4SE48yvujuiEulFzVMlQ_pFUJOtOom_N0eIfkbo_4_THhR9oe-tBusZZMdJ6GAtvo_qyywxSxS9KdJEzSkl0l5NpPQ9U5yPkNnBOcwar1E8sTVDr6OTz6ZcYUwX4KPLUgLsu4w',
+    fuel: 'Diesel',
+    transmission: 'Automatique',
+    seats: 5,
+    tag: 'Ville'
+  },
+  {
     id: '3',
     name: 'Peugeot 208',
     category: 'Compacte',
@@ -38,18 +50,6 @@ const fleetData = [
     seats: 5,
     tag: 'Ville',
     popular: true
-  },
-  {
-    id: '4',
-    name: 'Range Rover Evoque',
-    category: 'Luxe',
-    price: 1200,
-    currency: 'MAD',
-    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCqwWekZ5yiw8tKMrEf0iXdkBVCOmL75JG3AIqi3gNnS5Td1iq7xkS3QMhHGtWQMC8UjnR228UcBDb6Sr15SrUbHTg9fBiUNcbaQXGCchngxxRmy8f-0osuTA5h3xsoOKBE8n1ILXQlNY-78BschvQ542-fIdaeehEOEUs9CbEELIQ2QP-GuGqo0BLKNyNFE0nQdXAxgVFVWQizjl5ltKIZZX7_nWSdxrwZqdVc63BKSw8EF9QmWG_e7ewFo3pdaIrHjjSHzVeCxcY',
-    fuel: 'Diesel',
-    transmission: 'Automatique',
-    seats: 5,
-    tag: 'Luxe'
   },
   {
     id: '5',
@@ -64,16 +64,40 @@ const fleetData = [
     tag: 'SUV'
   },
   {
-    id: '6',
-    name: 'Jeep Renegade',
+    id: '15',
+    name: 'Volkswagen Tiguan',
     category: 'SUV',
-    price: 600,
+    price: 900,
     currency: 'MAD',
-    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAeqpfjkK0a_67vu0C_yPXY4JApxg752zIeiWISSL_4BpLW3QTO71QQkkb664kkwdGVZi1QM-IQov1ZMaT8TB48jve2x8c_Y_v3V7crLEMkMGa2WkHkSoA2Q09Qo-Vl0OiqTP1PokkK7F8i0yKW24WzQ6k9dK37RVCLKDwiZL-6b9rtYmOUQFV6f6OevEok67y6LhbyzT_eT9eeiv1nkcRK7jjH2wFu7xU1TKZuqYNZIsietdsS9hdwpc7-kTTg95CW-GNRn8OC2zg',
+    image: 'https://images.unsplash.com/photo-1568852328499-56c6a7e08962?auto=format&fit=crop&w=800&q=80',
+    fuel: 'Diesel',
+    transmission: 'Automatique',
+    seats: 5,
+    tag: 'SUV'
+  },
+  {
+    id: '13',
+    name: 'Dacia Sandero',
+    category: 'Économique',
+    price: 300,
+    currency: 'MAD',
+    image: 'https://images.unsplash.com/photo-1623157545934-8c83e1554900?auto=format&fit=crop&w=800&q=80',
     fuel: 'Diesel',
     transmission: 'Manuelle',
     seats: 5,
-    tag: 'SUV'
+    tag: 'Ville'
+  },
+  {
+    id: '14',
+    name: 'Citroën C3',
+    category: 'Citadine',
+    price: 350,
+    currency: 'MAD',
+    image: 'https://images.unsplash.com/photo-1632245889029-e4179115d5e1?auto=format&fit=crop&w=800&q=80',
+    fuel: 'Diesel',
+    transmission: 'Manuelle',
+    seats: 5,
+    tag: 'Ville'
   },
   {
     id: '7',
@@ -83,6 +107,18 @@ const fleetData = [
     currency: 'MAD',
     image: 'https://images.unsplash.com/photo-1609520505218-74218447d2c3?auto=format&fit=crop&w=800&q=80',
     fuel: 'Essence',
+    transmission: 'Manuelle',
+    seats: 5,
+    tag: 'Ville'
+  },
+  {
+    id: '16',
+    name: 'Renault Clio 4',
+    category: 'Économique',
+    price: 250,
+    currency: 'MAD',
+    image: 'https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?auto=format&fit=crop&w=800&q=80',
+    fuel: 'Diesel',
     transmission: 'Manuelle',
     seats: 5,
     tag: 'Ville'
