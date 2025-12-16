@@ -2,13 +2,20 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Car } from '../types';
 
+const resolveImageSrc = (src?: string) => {
+  if (!src) return '';
+  if (/^https?:\/\//i.test(src)) return src;
+  if (src.startsWith('/')) return src;
+  return `/${src}`;
+};
+
 const featuredCars: Car[] = [
   {
     id: '1',
     name: 'Dacia Logan',
     category: 'Berline Économique',
     price: 250,
-    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCmel5Uv2Yvlw33HRpIHeOuUupE5ubuBK8xRIbemM_UmL-mLxQjM9jnj-cfxMVMid6btsfI49StUGBSsSLR5-WYZOlBArWR3bRMWncZtOg0-cVC5qZ28tcXeH-pjpGlqYYR8VR_fc5aDVzPVriJojnjn5tWMkB581KL0MR5DMbUaeeiRl0ACNnio9LZhTeOnojmdxmyQ06TjqNEXN-HsOxvh9Te1mL3n1Cs4hSiQNwNwOWOE8gAkBD_wHMpOwXsPrA1Wpo0Xj47tHM',
+    image: '/dacia.jpg',
     transmission: 'Manual',
     fuel: 'Diesel',
     seats: 5,
@@ -19,7 +26,7 @@ const featuredCars: Car[] = [
     name: 'Renault Clio 5',
     category: 'Citadine',
     price: 350,
-    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCb2U3CoI14uq3H7MP8kEW-h5KtiVqT1eVQYpLCOA8yUKdDQ1fZ9ZbLQLLo3XtQFqLiLkUTiKp-y9ZmcUn26MXu5p9NQxr0aPuxCyO9Or8tznESMHWwP2GQPHqk0csYCvOO3326Ph6VvVwAlKCWu7YrWRPN_2JkNFaqtgs78Lsj7lnBbM4WaKgBj9TS5V-LGuUxBOsg1wlYCDlX5JjJ31KHIn-6ouMeylx_F1uNYeaxrihamZiI-ZjPF8fU58wmoxZj0iIOpwbBUQI',
+    image: '/clio24.jpg',
     transmission: 'Auto',
     fuel: 'Petrol',
     seats: 5,
@@ -30,7 +37,7 @@ const featuredCars: Car[] = [
     name: 'Peugeot 208',
     category: 'Citadine Sport',
     price: 400,
-    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAhWm5q7TEvkpNt9ziFckEOsmyUEDC2ZJCS_J_LK1mLtSOj9SC4tWXwDYYDpeSPuPr3etHMmlrkoin-xWegt3dRK6o7em12Q6SiW8NMPfU93KimOLqW8ZjE91fnhaaavVAodMu5_wmAP_es4HwR6-mXLZSO0dn8qloQeKubJdFdve4NOL4szjBPy6EYXtkHUMK3LrogLCEfTce5VLBHZbw2f8-8W-JW4fZyrINDHNBEtD5cmGxfZA0_N-cVvZALhYqBcRcNOZlCv4Q',
+    image: '/208.jpeg',
     transmission: 'Manual',
     fuel: 'Diesel',
     seats: 5,
@@ -41,7 +48,7 @@ const featuredCars: Car[] = [
     name: 'Peugeot 308',
     category: 'Berline Premium',
     price: 450,
-    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCwF0OttUNrCN0Nq3-oePrLMLBmJpPoPUH7_zRE6apUsdHTi__C7-6QPlEvk45-gi3AwjzmRlcg32XMp0R5qlCpV7FuxcID9uQmBx1H2yvnGScCOoODkKDwG5NLNKyImEckJoa9ny4TUD_u5GYuVmCYUy34Aoh3HXvfVFKjLtFMuSgVvb9n5Eb9OJDkyhTO5ukm0Q_T1ygeRhECjHNc4xl-QdUutdpYeEiT_UfG3rgm5fR68-LJE_o41i8u8Uu7nq6KW1EiBhYqt40',
+    image: '/208.jpeg',
     transmission: 'Auto',
     fuel: 'Hybrid',
     seats: 5,
@@ -173,7 +180,7 @@ const Home: React.FC = () => {
               <div key={car.id} className="min-w-[300px] md:min-w-[360px] snap-center">
                 <div className="bg-white rounded-2xl border border-gray-100 p-4 h-full flex flex-col hover:shadow-lg transition-all duration-300 hover:border-primary/50">
                   <div className="relative w-full aspect-[16/10] rounded-xl overflow-hidden bg-gray-50 mb-4 group">
-                    <div className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-110" style={{ backgroundImage: `url("${car.image}")` }}></div>
+                    <div className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-110" style={{ backgroundImage: `url("${resolveImageSrc(car.image)}")` }}></div>
                     <div className={`absolute top-3 right-3 backdrop-blur px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 shadow-sm border ${car.available ? 'bg-white/90 text-green-700' : 'bg-red-50/90 text-red-700 border-red-100'}`}>
                       <span className={`w-1.5 h-1.5 rounded-full ${car.available ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`}></span>
                       {car.available ? 'Disponible' : 'Réservé'}

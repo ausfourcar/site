@@ -9,14 +9,15 @@ const Footer: React.FC = () => {
           {/* Brand Info */}
           <div className="flex flex-col gap-6">
             <div className="flex items-center gap-3">
-              <div className="flex items-center justify-center size-8 rounded-full bg-primary text-white">
-                <span className="material-symbols-outlined text-lg">directions_car</span>
+              <div className="flex items-center justify-center size-12 rounded-full bg-white overflow-hidden">
+                <img src="/logo.jpeg" alt="AUSFOUR" className="w-full h-full object-contain" />
               </div>
               <div className="flex flex-col">
                 <h2 className="text-lg font-display font-black leading-none">AUSFOUR</h2>
                 <span className="text-[0.5rem] font-bold text-primary uppercase tracking-widest">Location de Voiture</span>
               </div>
             </div>
+
             <p className="text-gray-400 text-sm leading-relaxed font-body">
               Votre partenaire premium pour explorer le Maroc. Véhicules de luxe, service professionnel et voyages inoubliables.
             </p>

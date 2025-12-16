@@ -14,16 +14,16 @@ const Navbar: React.FC = () => {
   ];
 
   return (
-    <div className="fixed top-0 left-0 right-0 z-50 flex justify-center pt-6 px-4">
-      <nav className="glass-nav rounded-full px-6 py-3 flex items-center justify-between gap-8 shadow-glass w-full max-w-5xl transition-all duration-300 relative">
+    <div className="fixed top-0 left-0 right-0 z-50 flex justify-center pt-8 px-6">
+      <nav className="glass-nav rounded-full px-8 py-4 flex items-center justify-between gap-10 shadow-glass w-full max-w-6xl transition-all duration-300 relative">
         {/* Logo */}
         <Link to="/" className="flex items-center gap-3 group">
-          <div className="flex items-center justify-center size-10 rounded-full bg-black text-primary transition-colors border border-primary/20">
-            <span className="material-symbols-outlined text-2xl">directions_car</span>
+          <div className="flex items-center justify-center size-24 rounded-full bg-white transition-colors border border-primary/20 overflow-hidden">
+            <img src="/logo.jpeg" alt="AUSFOUR" className="w-full h-full object-contain" />
           </div>
           <div className="flex flex-col justify-center">
-            <h2 className="text-xl font-display font-black tracking-tight text-black leading-none">AUSFOUR</h2>
-            <span className="text-[0.55rem] font-bold text-primary uppercase tracking-[0.15em] leading-none mt-0.5">Location de Voiture</span>
+            <h2 className="text-2xl font-display font-black tracking-tight text-black leading-none">AUSFOUR</h2>
+            <span className="text-[0.65rem] font-bold text-primary uppercase tracking-[0.15em] leading-none mt-1">Location de Voiture</span>
           </div>
         </Link>
 

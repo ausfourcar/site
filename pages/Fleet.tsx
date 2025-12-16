@@ -1,6 +1,13 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 
+const resolveImageSrc = (src?: string) => {
+  if (!src) return '';
+  if (/^https?:\/\//i.test(src)) return src;
+  if (src.startsWith('/')) return src;
+  return `/${src}`;
+};
+
 const fleetData = [
   {
     id: '1',
@@ -8,7 +15,7 @@ const fleetData = [
     category: 'Économique',
     price: 250,
     currency: 'MAD',
-    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuARS3EHXYoViWSHapJYi4iHK1nL-RxTaPcHz-B-8eSHR_IcQMK-avNsR9BXj2h9U0AHNiiM-bZegp27YRl0MqrwlF8Ch_AxCr61aE6WDzeOXqlWU6rthi6YZ_pEnfgoW_OB0RFovYfPqtet7Kf2OhDamby9Zx04Q_s8_IZ0_JCumE96PvDE9adjmZa6H6g1hTG3ajHFn-tdRJ0q95I3xvHvmVcIaDUrp9zHYrpOfcYjToei26g23wVwrTSbUrJPUiITWPPjuWHsfnw',
+    image: '/dacia.jpg',
     fuel: 'Diesel',
     transmission: 'Manuelle',
     seats: 5,
@@ -20,7 +27,7 @@ const fleetData = [
     category: 'Citadine',
     price: 350,
     currency: 'MAD',
-    image: 'clio24.jpg',
+    image: '/clio24.jpg',
     fuel: 'Diesel',
     transmission: 'Manuelle',
     seats: 5,
@@ -32,7 +39,7 @@ const fleetData = [
     category: 'Citadine',
     price: 400,
     currency: 'MAD',
-    image: 'clio24.jpg',
+    image: '/clio24.jpg',
     fuel: 'Diesel',
     transmission: 'Automatique',
     seats: 5,
@@ -44,7 +51,7 @@ const fleetData = [
     category: 'Compacte',
     price: 400,
     currency: 'MAD',
-    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCfb_bBlJ8TTjsUfAR2GLSQodsajEeqxwBEaWWsSDg-DezjGOYPxEp4vST2_IHq0hG524pJ6njgTGmEkS0e3H2JhN8-W0SEahMN3gUeKcbLR2R3gpJ8wUa842hEFptTg82lvVI0E_Co2CTzHT5aZCJSZ8LYUYDaqmXmufOfrH7RpN9rFBbpzwzMbvu0dQ6YejhkKWKAvJ6zh21Ro-P93hWcaQyH-4CSCeufFwSpbQW2o9sS8OTCvNzm0KX2r_x_cW_UeUnU4WeKKDk',
+    image: '/208.jpeg',
     fuel: 'Essence',
     transmission: 'Automatique',
     seats: 5,
@@ -57,7 +64,7 @@ const fleetData = [
     category: 'SUV',
     price: 750,
     currency: 'MAD',
-    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDfwH_vuOTLkbLinXeOLKFrRxv1EvqEb75E37HVnv85cjpz7OGo4-7nnm2yFCs0yOzTkCRZWmdWZZ9s2yLj2qmWr5j-EHDqLp2vei9Bg_BuCbh7FhFntRgGebModp5GRl7Gtx3VHOMhwCNnY0L7txPnF67t9DMzx2Wux51kbd2XBAIocdPw7V-VzD_2Lam4a9jjpg7vXCKtEqNyMzBoOX57I__azYE24zgLKchRPgTLxGuQOQes7EF1lbR9JgVSSTile0JwjsRYmVo',
+    image: '/tucson.webp',
     fuel: 'Diesel',
     transmission: 'Automatique',
     seats: 5,
@@ -69,7 +76,7 @@ const fleetData = [
     category: 'SUV',
     price: 900,
     currency: 'MAD',
-    image: 'https://images.unsplash.com/photo-1568852328499-56c6a7e08962?auto=format&fit=crop&w=800&q=80',
+    image: '/tiguan.png',
     fuel: 'Diesel',
     transmission: 'Automatique',
     seats: 5,
@@ -81,7 +88,7 @@ const fleetData = [
     category: 'Économique',
     price: 300,
     currency: 'MAD',
-    image: 'https://images.unsplash.com/photo-1623157545934-8c83e1554900?auto=format&fit=crop&w=800&q=80',
+    image: '/dacia.jpg',
     fuel: 'Diesel',
     transmission: 'Manuelle',
     seats: 5,
@@ -93,7 +100,7 @@ const fleetData = [
     category: 'Citadine',
     price: 350,
     currency: 'MAD',
-    image: 'https://images.unsplash.com/photo-1632245889029-e4179115d5e1?auto=format&fit=crop&w=800&q=80',
+    image: '/c3.jpg',
     fuel: 'Diesel',
     transmission: 'Manuelle',
     seats: 5,
@@ -105,7 +112,7 @@ const fleetData = [
     category: 'Citadine',
     price: 299,
     currency: 'MAD',
-    image: 'https://images.unsplash.com/photo-1609520505218-74218447d2c3?auto=format&fit=crop&w=800&q=80',
+    image: '/corsa.png',
     fuel: 'Essence',
     transmission: 'Manuelle',
     seats: 5,
@@ -117,7 +124,7 @@ const fleetData = [
     category: 'Économique',
     price: 250,
     currency: 'MAD',
-    image: 'https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?auto=format&fit=crop&w=800&q=80',
+    image: '/clio4.jpeg',
     fuel: 'Diesel',
     transmission: 'Manuelle',
     seats: 5,
@@ -129,7 +136,7 @@ const fleetData = [
     category: 'Économique',
     price: 249,
     currency: 'MAD',
-    image: 'https://images.unsplash.com/photo-1566008885218-90abf9200ddb?auto=format&fit=crop&w=800&q=80',
+    image: '/kia.jpg',
     fuel: 'Essence',
     transmission: 'Manuelle',
     seats: 4,
@@ -141,7 +148,7 @@ const fleetData = [
     category: 'Citadine',
     price: 299,
     currency: 'MAD',
-    image: 'https://images.unsplash.com/photo-1592198084033-aade902d1aae?auto=format&fit=crop&w=800&q=80',
+    image: '/i20.jpg',
     fuel: 'Diesel',
     transmission: 'Manuelle',
     seats: 5,
@@ -153,7 +160,7 @@ const fleetData = [
     category: 'Citadine',
     price: 299,
     currency: 'MAD',
-    image: 'https://images.unsplash.com/photo-1502877338535-766e1452684a?auto=format&fit=crop&w=800&q=80',
+    image: '/i10.png',
     fuel: 'Essence',
     transmission: 'Manuelle',
     seats: 4,
@@ -165,7 +172,7 @@ const fleetData = [
     category: 'SUV',
     price: 699,
     currency: 'MAD',
-    image: 'https://images.unsplash.com/photo-1627454819213-f77f3076fc8c?auto=format&fit=crop&w=800&q=80',
+    image: '/Trok.jpg',
     fuel: 'Diesel',
     transmission: 'Automatique',
     seats: 5,
@@ -216,7 +223,7 @@ const Fleet: React.FC = () => {
             <div className="absolute w-[80%] h-[80%] bg-gradient-to-tr from-background-light to-white rounded-full border border-white shadow-inner"></div>
             <div 
               className="w-full h-full bg-contain bg-center bg-no-repeat drop-shadow-2xl hover:scale-105 transition-transform duration-500 ease-out z-20" 
-              style={{ backgroundImage: 'url("https://lh3.googleusercontent.com/aida-public/AB6AXuCcOoUwE97qgfUUtFvEMwJ_mA0-ArE-dTIgaLrQuXg4cuikhiH9MMauUC4ocSNTDKaHRwha8qYCwA982ucQqDtjJJWwZFEWcXhD-Hlz8bx0pX5NPtSQvo7yIfNkcLwFOk2RIx-Vdt0-t67ThFZjijwLQzyutQtbz0ZYc9CPosJM0Y5RXovL4jprgtuoqZDmnXGpcoQ6RdcPBgqoOHTq98nbxqHEz8VThn4SzQEPdPaXbUqBICGx55643SRO6NRRI2-p3hMP_5fgPxc")' }}
+              style={{ backgroundImage: `url("${resolveImageSrc(featuredCar?.image)}")` }}
             ></div>
           </div>
         </div>
@@ -245,9 +252,9 @@ const Fleet: React.FC = () => {
       </div>
 
       {/* Grid */}
-      <div className="w-full max-w-7xl grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      <div className="w-full max-w-7xl grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-10">
         {filteredFleet.map((car) => (
-          <div key={car.id} className="bg-white rounded-2xl p-4 flex flex-col gap-4 shadow-soft hover:shadow-float transition-all duration-300 group border border-transparent hover:border-primary/20 relative">
+          <div key={car.id} className="bg-white rounded-2xl p-6 flex flex-col gap-5 shadow-soft hover:shadow-float transition-all duration-300 group border border-transparent hover:border-primary/20 relative">
             <div className="absolute top-4 right-4 z-10">
               <button className="size-8 rounded-full bg-white/80 backdrop-blur-sm flex items-center justify-center text-text-secondary hover:text-red-500 transition-colors shadow-sm">
                 <span className="material-symbols-outlined text-[18px]">favorite</span>
@@ -258,13 +265,13 @@ const Fleet: React.FC = () => {
                 <span className="bg-accent-orange text-white text-[10px] font-bold px-2 py-1 rounded-full shadow-sm font-display">POPULAIRE</span>
               </div>
             )}
-            <div className="w-full aspect-[4/3] rounded-xl bg-background-light overflow-hidden relative">
+            <div className="w-full aspect-[16/10] rounded-xl bg-background-light overflow-hidden relative">
               <div 
-                className="w-full h-full bg-cover bg-center group-hover:scale-105 transition-transform duration-500" 
-                style={{ backgroundImage: `url("${car.image}")` }}
+                className="w-full h-full bg-contain bg-center bg-no-repeat group-hover:scale-105 transition-transform duration-500" 
+                style={{ backgroundImage: `url("${resolveImageSrc(car.image)}")` }}
               ></div>
             </div>
-            <div className="flex flex-col gap-3 px-2 pb-2">
+            <div className="flex flex-col gap-4 px-2 pb-2">
               <div className="flex justify-between items-start">
                 <div>
                   <p className="text-text-secondary text-xs font-bold uppercase tracking-wider font-display">{car.category}</p>

@@ -1,6 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useLocation, Navigate } from 'react-router-dom';
 
+const resolveImageSrc = (src?: string) => {
+  if (!src) return '';
+  if (/^https?:\/\//i.test(src)) return src;
+  if (src.startsWith('/')) return src;
+  return `/${src}`;
+};
+
 const extrasData = [
   { id: 'insurance', icon: 'verified_user', title: 'Couverture Complète', subtitle: 'Zéro franchise', price: 250 },
   { id: 'child_seat', icon: 'child_care', title: 'Siège Enfant', subtitle: 'Certifié sécurité', price: 100 },
@@ -417,7 +424,7 @@ Merci de confirmer la disponibilité.
               {/* Reservation Card */}
               <div className="bg-white rounded-xl overflow-hidden border border-border-color shadow-float">
                 <div className="relative h-48 w-full bg-background-light overflow-hidden group">
-                  <div className="absolute inset-0 bg-cover bg-center transition-transform duration-700 hover:scale-105" style={{ backgroundImage: `url("${car.image}")` }}></div>
+                  <div className="absolute inset-0 bg-cover bg-center transition-transform duration-700 hover:scale-105" style={{ backgroundImage: `url("${resolveImageSrc(car.image)}")` }}></div>
                   <div className="absolute bottom-0 left-0 w-full bg-gradient-to-t from-black/60 to-transparent p-4">
                     <span className="inline-block px-3 py-1 bg-primary text-text-main text-xs font-bold rounded-full mb-1 uppercase">{car.category}</span>
                   </div>
