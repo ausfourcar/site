@@ -9,6 +9,13 @@ export interface Car {
   seats: number;
   available: boolean;
   featured?: boolean;
+  doors?: number;
+  luggage?: number;
+  airConditioning?: boolean;
+  powerCV?: number;
+  powerKW?: number;
+  co2Emissions?: number;
+  minAge?: number;
 }
 
 export interface Feature {

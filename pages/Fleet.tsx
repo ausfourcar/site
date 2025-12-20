@@ -8,7 +8,7 @@ const resolveImageSrc = (src?: string) => {
   return `/${src}`;
 };
 
-const fleetData = [
+export const fleetData = [
   {
     id: '1',
     name: 'Dacia Logan 2024',
@@ -56,7 +56,14 @@ const fleetData = [
     transmission: 'Automatique',
     seats: 5,
     tag: 'Ville',
-    popular: true
+    popular: true,
+    doors: 5,
+    luggage: 2,
+    airConditioning: true,
+    powerCV: 130,
+    powerKW: 96,
+    co2Emissions: 120,
+    minAge: 21
   },
   {
     id: '5',
@@ -186,8 +193,8 @@ const Fleet: React.FC = () => {
   // Find the featured car for the highlight section (Peugeot 208, ID 3)
   const featuredCar = fleetData.find(car => car.id === '3');
 
-  const filteredFleet = filter === 'Tout' 
-    ? fleetData 
+  const filteredFleet = filter === 'Tout'
+    ? fleetData
     : fleetData.filter(car => car.tag === filter);
 
   const filters = ['Tout', 'Ville', 'SUV', 'Luxe'];
@@ -196,7 +203,7 @@ const Fleet: React.FC = () => {
     <div className="relative flex flex-col items-center w-full min-h-screen pt-32 pb-20 px-4 md:px-10 lg:px-20 gap-16">
       {/* Background elements */}
       <div className="absolute top-0 left-0 w-full h-[600px] bg-gradient-to-b from-[#fbfbe4] to-transparent -z-10"></div>
-      
+
       {/* Highlight Section */}
       <div className="w-full max-w-7xl">
         <div className="flex flex-col lg:flex-row gap-8 items-center bg-white rounded-2xl p-6 lg:p-10 shadow-float border border-white relative overflow-hidden group">
@@ -206,7 +213,7 @@ const Fleet: React.FC = () => {
               Nouvel Arrivage
             </div>
             <h1 className="text-4xl md:text-5xl lg:text-7xl font-display font-bold tracking-tight text-text-main leading-[1.1]">
-              Conduisez le Futur <br/>
+              Conduisez le Futur <br />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-accent-orange to-primary bg-[length:200%_auto] animate-pulse">Peugeot 208 GT</span>
             </h1>
             <p className="text-text-secondary text-lg max-w-lg leading-relaxed font-body">
@@ -221,8 +228,8 @@ const Fleet: React.FC = () => {
           </div>
           <div className="flex-1 relative w-full h-[300px] lg:h-[400px] flex items-center justify-center z-10">
             <div className="absolute w-[80%] h-[80%] bg-gradient-to-tr from-background-light to-white rounded-full border border-white shadow-inner"></div>
-            <div 
-              className="w-full h-full bg-contain bg-center bg-no-repeat drop-shadow-2xl hover:scale-105 transition-transform duration-500 ease-out z-20" 
+            <div
+              className="w-full h-full bg-contain bg-center bg-no-repeat drop-shadow-2xl hover:scale-105 transition-transform duration-500 ease-out z-20"
               style={{ backgroundImage: `url("${resolveImageSrc(featuredCar?.image)}")` }}
             ></div>
           </div>
@@ -234,14 +241,13 @@ const Fleet: React.FC = () => {
         <div className="bg-white/80 backdrop-blur-md rounded-xl shadow-float border border-white/50 p-2 md:p-4 flex flex-col md:flex-row gap-3 md:gap-4 items-stretch md:items-center justify-center">
           <div className="flex items-center gap-2 overflow-x-auto w-full md:w-auto scrollbar-hide pb-1 md:pb-0 px-1 md:px-2 justify-start md:justify-center">
             {filters.map(f => (
-               <button 
+              <button
                 key={f}
                 onClick={() => setFilter(f)}
-                className={`flex h-9 md:h-10 shrink-0 items-center justify-center gap-x-2 rounded-full px-4 md:px-5 transition-all active:scale-95 border ${
-                  filter === f 
-                    ? 'bg-text-main text-white shadow-md border-transparent' 
-                    : 'bg-background-light text-text-main border-transparent hover:border-primary/50 hover:bg-white'
-                }`}
+                className={`flex h-9 md:h-10 shrink-0 items-center justify-center gap-x-2 rounded-full px-4 md:px-5 transition-all active:scale-95 border ${filter === f
+                  ? 'bg-text-main text-white shadow-md border-transparent'
+                  : 'bg-background-light text-text-main border-transparent hover:border-primary/50 hover:bg-white'
+                  }`}
               >
                 {f === 'Tout' ? null : <span className="material-symbols-outlined text-base md:text-lg">{f === 'Ville' ? 'directions_car' : f === 'SUV' ? 'airport_shuttle' : 'diamond'}</span>}
                 <p className="text-xs md:text-sm font-bold whitespace-nowrap">{f === 'Tout' ? 'Toutes les Voitures' : f}</p>
@@ -266,8 +272,8 @@ const Fleet: React.FC = () => {
               </div>
             )}
             <div className="w-full aspect-[16/10] rounded-xl bg-background-light overflow-hidden relative">
-              <div 
-                className="w-full h-full bg-contain bg-center bg-no-repeat group-hover:scale-105 transition-transform duration-500" 
+              <div
+                className="w-full h-full bg-contain bg-center bg-no-repeat group-hover:scale-105 transition-transform duration-500"
                 style={{ backgroundImage: `url("${resolveImageSrc(car.image)}")` }}
               ></div>
             </div>
@@ -303,12 +309,12 @@ const Fleet: React.FC = () => {
           </div>
         ))}
       </div>
-      
+
       {filteredFleet.length === 0 && (
-         <div className="text-center py-20">
-            <h3 className="text-2xl font-bold text-text-main">Aucune voiture trouvée</h3>
-            <p className="text-text-secondary">Essayez de changer votre filtre.</p>
-         </div>
+        <div className="text-center py-20">
+          <h3 className="text-2xl font-bold text-text-main">Aucune voiture trouvée</h3>
+          <p className="text-text-secondary">Essayez de changer votre filtre.</p>
+        </div>
       )}
 
       <div className="flex justify-center w-full">
