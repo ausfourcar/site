@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useLocation, Navigate } from 'react-router-dom';
+import emailjs from '@emailjs/browser';
 import { fleetData } from './Fleet';
 
 const resolveImageSrc = (src?: string) => {
@@ -155,14 +156,14 @@ const Reservation: React.FC = () => {
     }
   };
 
-  const handleConfirmReservation = () => {
+  const handleConfirmReservation = async () => {
     // Construct WhatsApp Message
     const phoneNumber = "212643193316";
     const extrasText = selectedExtras.length > 0
       ? selectedExtras.map(id => extrasData.find(e => e.id === id)?.title).join(', ')
       : "Aucun";
 
-    // Calculations for the message
+    // Calculate total price
     const transmissionExtra = (isConfigurableCar && selectedTransmission === 'Automatique' && car.transmission === 'Manuelle') ? 50 : 0;
     const protectionPlanDailyPrice = protectionPlan === 'moyen' ? 144 : 0;
     const basePrice = (car.price + transmissionExtra + protectionPlanDailyPrice) * days;
@@ -175,26 +176,59 @@ const Reservation: React.FC = () => {
     const finalPickupLocation = pickupLocation === 'autre' ? customPickupLocation : pickupLocation;
     const finalDropoffLocation = dropoffLocation === 'autre' ? customDropoffLocation : dropoffLocation;
 
+    const reservationDetails = {
+      car: car.name,
+      transmission: selectedTransmission,
+      pickupLocation: finalPickupLocation,
+      pickupDate,
+      pickupTime,
+      dropoffLocation: finalDropoffLocation,
+      dropoffDate,
+      dropoffTime,
+      days,
+      mileageType: mileageType === 'limited' ? 'Limité (250 km/j)' : 'Illimité',
+      driverName,
+      driverPhone,
+      extras: extrasText,
+      protectionPlan: protectionPlan === 'moyen' ? 'Moyen (+144 MAD/j)' : 'Basique',
+      paymentMethod: paymentMethod === 'cash' ? 'Espèces' : 'TPE/Carte',
+      total: grandTotal.toFixed(2),
+      date: new Date().toLocaleString()
+    };
+
+    // Send email using EmailJS
+    try {
+      await emailjs.send(
+        'service_h54w5w8', // EmailJS service ID
+        'template_q75zuwj', // EmailJS template ID
+        reservationDetails,
+        'T4sCGl31u89i7RhK3' // EmailJS public key
+      );
+      console.log('Email sent successfully!');
+    } catch (error) {
+      console.error('Failed to send email:', error);
+    }
+
     const message = `
 *Nouvelle Réservation - Site Web*
----------------------------
-🚗 *Voiture*: ${car.name}
-⚙️ *Vitesse*: ${selectedTransmission}
-📍 *Lieu Départ*: ${finalPickupLocation}
-📅 *Départ*: ${pickupDate} à ${pickupTime}
-📍 *Lieu Retour*: ${finalDropoffLocation}
-📅 *Retour*: ${dropoffDate} à ${dropoffTime}
-⏳ *Durée*: ${days} Jours
-🛣️ *Kilométrage*: ${mileageType === 'limited' ? 'Limité (250 km/j)' : 'Illimité'}
----------------------------
-👤 *Conducteur*: ${driverName}
-📱 *Tél*: ${driverPhone}
----------------------------
-➕ *Options*: ${extrasText}
-�️ *Protection*: ${protectionPlan === 'moyen' ? 'Moyen (+144 MAD/j)' : 'Basique'}
-�💳 *Paiement*: ${paymentMethod === 'cash' ? 'Espèces' : 'TPE/Carte'}
-💰 *Total*: ${grandTotal.toFixed(2)} MAD
----------------------------
+----------------------------
+🚗 *Voiture*: ${reservationDetails.car}
+⚙️ *Vitesse*: ${reservationDetails.transmission}
+📍 *Lieu Départ*: ${reservationDetails.pickupLocation}
+📅 *Départ*: ${reservationDetails.pickupDate} à ${reservationDetails.pickupTime}
+📍 *Lieu Retour*: ${reservationDetails.dropoffLocation}
+📅 *Retour*: ${reservationDetails.dropoffDate} à ${reservationDetails.dropoffTime}
+⏳ *Durée*: ${reservationDetails.days} Jours
+🛣️ *Kilométrage*: ${reservationDetails.mileageType}
+----------------------------
+👤 *Conducteur*: ${reservationDetails.driverName}
+📱 *Tél*: ${reservationDetails.driverPhone}
+----------------------------
+➕ *Options*: ${reservationDetails.extras}
+🛡️ *Protection*: ${reservationDetails.protectionPlan}
+💳 *Paiement*: ${reservationDetails.paymentMethod}
+💰 *Total*: ${reservationDetails.total} MAD
+----------------------------
 Merci de confirmer la disponibilité.
     `.trim();
 
