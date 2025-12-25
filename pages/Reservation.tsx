@@ -47,10 +47,18 @@ const Reservation: React.FC = () => {
   // Driver Info State
   const [driverName, setDriverName] = useState("");
   const [driverPhone, setDriverPhone] = useState("");
+  const [driverEmail, setDriverEmail] = useState("");
   const [driverId, setDriverId] = useState("");
+  const [driverLicense, setDriverLicense] = useState("");
+  const [driverDOB, setDriverDOB] = useState("");
+  const [driverAddress, setDriverAddress] = useState("");
+
   const [secondDriverName, setSecondDriverName] = useState("");
   const [secondDriverPhone, setSecondDriverPhone] = useState("");
   const [secondDriverId, setSecondDriverId] = useState("");
+  const [secondDriverLicense, setSecondDriverLicense] = useState("");
+  const [secondDriverDOB, setSecondDriverDOB] = useState("");
+  const [secondDriverAddress, setSecondDriverAddress] = useState("");
 
   // Location State
   const [pickupLocation, setPickupLocation] = useState("Aéroport Oujda-Angads");
@@ -59,7 +67,10 @@ const Reservation: React.FC = () => {
   const [customDropoffLocation, setCustomDropoffLocation] = useState("");
   const [mileageType, setMileageType] = useState<'limited' | 'unlimited'>('limited');
   const [selectedTransmission, setSelectedTransmission] = useState(car?.transmission);
-  const [protectionPlan, setProtectionPlan] = useState<'basique' | 'moyen'>('basique');
+  const [protectionPlan, setProtectionPlan] = useState<'basique' | 'moyen' | 'premium'>('basique');
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [isSending, setIsSending] = useState(false);
+  const [whatsappMessage, setWhatsappMessage] = useState("");
 
   const isConfigurableCar = car?.name.includes("Clio 5") || car?.name.includes("Picanto");
 
@@ -123,6 +134,13 @@ const Reservation: React.FC = () => {
     }
   }, [pickupDate, pickupTime, dropoffDate, dropoffTime]);
 
+  // Reset protection plan if days drop below 10
+  useEffect(() => {
+    if (days > 0 && days < 10 && (protectionPlan === 'moyen' || protectionPlan === 'premium')) {
+      setProtectionPlan('basique');
+    }
+  }, [days, protectionPlan]);
+
   // Handle Pickup Date Change: Auto-adjust dropoff
   const handlePickupDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newDate = e.target.value;
@@ -158,15 +176,14 @@ const Reservation: React.FC = () => {
 
   const handleConfirmReservation = async () => {
     // Construct WhatsApp Message
-    const phoneNumber = "212643193316";
     const extrasText = selectedExtras.length > 0
       ? selectedExtras.map(id => extrasData.find(e => e.id === id)?.title).join(', ')
       : "Aucun";
 
     // Calculate total price
     const transmissionExtra = (isConfigurableCar && selectedTransmission === 'Automatique' && car.transmission === 'Manuelle') ? 50 : 0;
-    const protectionPlanDailyPrice = protectionPlan === 'moyen' ? 144 : 0;
-    const basePrice = (car.price + transmissionExtra + protectionPlanDailyPrice) * days;
+    const protectionPlanTotal = (protectionPlan === 'moyen' && days >= 10) ? 1000 : (protectionPlan === 'premium' && days >= 10 ? 2000 : 0);
+    const basePrice = (car.price + transmissionExtra) * days + protectionPlanTotal;
     const extrasTotal = extrasData
       .filter(e => selectedExtras.includes(e.id))
       .reduce((sum, e) => sum + (e.isPerDay ? e.price * days : e.price), 0);
@@ -176,40 +193,99 @@ const Reservation: React.FC = () => {
     const finalPickupLocation = pickupLocation === 'autre' ? customPickupLocation : pickupLocation;
     const finalDropoffLocation = dropoffLocation === 'autre' ? customDropoffLocation : dropoffLocation;
 
+    // Driver 2 - Set to 'NON' if not selected
+    const isSecondDriverSelected = selectedExtras.includes('driver');
+
+    // Validation
+    const missingPrimary = [];
+    if (!driverName.trim()) missingPrimary.push("Nom Complet");
+    if (!driverPhone.trim()) missingPrimary.push("Téléphone");
+    if (!driverEmail.trim()) missingPrimary.push("Email");
+    if (!driverId.trim()) missingPrimary.push("CIN / Passport");
+    if (!driverLicense.trim()) missingPrimary.push("N° Permis");
+    if (!driverDOB) missingPrimary.push("Date de Naissance");
+    if (!driverAddress.trim()) missingPrimary.push("Adresse");
+
+    if (missingPrimary.length > 0) {
+      alert(`Veuillez remplir les informations suivantes pour le conducteur principal : ${missingPrimary.join(", ")}`);
+      return;
+    }
+
+    if (isSecondDriverSelected) {
+      const missingSecondary = [];
+      if (!secondDriverName.trim()) missingSecondary.push("Nom Complet");
+      if (!secondDriverPhone.trim()) missingSecondary.push("Téléphone");
+      if (!secondDriverId.trim()) missingSecondary.push("CIN / Passport");
+      if (!secondDriverLicense.trim()) missingSecondary.push("N° Permis");
+      if (!secondDriverDOB) missingSecondary.push("Date de Naissance");
+      if (!secondDriverAddress.trim()) missingSecondary.push("Adresse");
+
+      if (missingSecondary.length > 0) {
+        alert(`Veuillez remplir les informations suivantes pour le deuxième conducteur : ${missingSecondary.join(", ")}`);
+        return;
+      }
+    }
+
     const reservationDetails = {
       car: car.name,
       transmission: selectedTransmission,
       pickupLocation: finalPickupLocation,
-      pickupDate,
+      pickupDate,      // Date de départ
       pickupTime,
       dropoffLocation: finalDropoffLocation,
-      dropoffDate,
+      dropoffDate,     // Date de retour
       dropoffTime,
+      startDate: pickupDate, // Explicit start date for template
+      endDate: dropoffDate,   // Explicit end date for template
       days,
       mileageType: mileageType === 'limited' ? 'Limité (250 km/j)' : 'Illimité',
+
+      // Driver 1
       driverName,
       driverPhone,
+      driverEmail,
+      driverId,
+      driverLicense,
+      driverDOB,
+      driverAddress,
+
+      // Driver 2 - Flattened to simple strings to avoid template logic issues
+      secondDriverName: isSecondDriverSelected ? secondDriverName : 'NON',
+      secondDriverPhone: isSecondDriverSelected ? secondDriverPhone : 'NON',
+      secondDriverId: isSecondDriverSelected ? secondDriverId : 'NON',
+      secondDriverLicense: isSecondDriverSelected ? secondDriverLicense : 'NON',
+      secondDriverDOB: isSecondDriverSelected ? secondDriverDOB : 'NON',
+      secondDriverAddress: isSecondDriverSelected ? secondDriverAddress : 'NON',
+
       extras: extrasText,
-      protectionPlan: protectionPlan === 'moyen' ? 'Moyen (+144 MAD/j)' : 'Basique',
+      protectionPlan: protectionPlan === 'moyen' ? 'Moyen (1000 MAD/Total)' : (protectionPlan === 'premium' ? 'Premium (2000 MAD/Total)' : 'Basique'),
       paymentMethod: paymentMethod === 'cash' ? 'Espèces' : 'TPE/Carte',
       total: grandTotal.toFixed(2),
       date: new Date().toLocaleString()
     };
 
     // Send email using EmailJS
+    setIsSending(true);
     try {
+      // 1. Send company email first (Critical)
       await emailjs.send(
-        'service_h54w5w8', // EmailJS service ID
-        'template_q75zuwj', // EmailJS template ID
+        'service_h54w5w8',
+        'template_q75zuwj',
         reservationDetails,
-        'T4sCGl31u89i7RhK3' // EmailJS public key
+        'T4sCGl31u89i7RhK3'
       );
-      console.log('Email sent successfully!');
-    } catch (error) {
-      console.error('Failed to send email:', error);
-    }
+      console.log('Company email sent successfully');
 
-    const message = `
+      // 2. Wait and then send client email (Secondary)
+      await emailjs.send(
+        'service_h54w5w8',
+        'template_kc1duqt',
+        reservationDetails,
+        'T4sCGl31u89i7RhK3'
+      );
+      console.log('Client email sent successfully');
+
+      const whatsappMsg = `
 *Nouvelle Réservation - Site Web*
 ----------------------------
 🚗 *Voiture*: ${reservationDetails.car}
@@ -222,7 +298,19 @@ const Reservation: React.FC = () => {
 🛣️ *Kilométrage*: ${reservationDetails.mileageType}
 ----------------------------
 👤 *Conducteur*: ${reservationDetails.driverName}
+🆔 *CIN/Pass*: ${reservationDetails.driverId}
+🪪 *Permis*: ${reservationDetails.driverLicense}
+🎂 *Né(e) le*: ${reservationDetails.driverDOB}
 📱 *Tél*: ${reservationDetails.driverPhone}
+📧 *Email*: ${reservationDetails.driverEmail}
+🏠 *Adr*: ${reservationDetails.driverAddress}
+${selectedExtras.includes('driver') ? `----------------------------
+👤 *2ème Cond.*: ${reservationDetails.secondDriverName}
+🆔 *CIN/Pass 2*: ${reservationDetails.secondDriverId}
+🪪 *Permis 2*: ${reservationDetails.secondDriverLicense}
+🎂 *Né(e) le 2*: ${reservationDetails.secondDriverDOB}
+📱 *Tél 2*: ${reservationDetails.secondDriverPhone}
+🏠 *Adr 2*: ${reservationDetails.secondDriverAddress}` : ''}
 ----------------------------
 ➕ *Options*: ${reservationDetails.extras}
 🛡️ *Protection*: ${reservationDetails.protectionPlan}
@@ -230,9 +318,21 @@ const Reservation: React.FC = () => {
 💰 *Total*: ${reservationDetails.total} MAD
 ----------------------------
 Merci de confirmer la disponibilité.
-    `.trim();
+      `.trim();
 
-    const encodedMessage = encodeURIComponent(message);
+      setWhatsappMessage(whatsappMsg);
+      setShowSuccessModal(true);
+    } catch (error) {
+      console.error('Email sending failed:', error);
+      alert(`Erreur lors de l'envoi : ${error instanceof Error ? error.message : 'Erreur inconnue'}. Veuillez nous contacter sur WhatsApp.`);
+    } finally {
+      setIsSending(false);
+    }
+  };
+
+  const handleWhatsAppAction = () => {
+    const phoneNumber = "212643193316";
+    const encodedMessage = encodeURIComponent(whatsappMessage);
     window.open(`https://wa.me/${phoneNumber}?text=${encodedMessage}`, '_blank');
   };
 
@@ -249,8 +349,8 @@ Merci de confirmer la disponibilité.
 
   // Calculations for display
   const transmissionExtra = (isConfigurableCar && selectedTransmission === 'Automatique' && car.transmission === 'Manuelle') ? 50 : 0;
-  const protectionPlanDailyPrice = protectionPlan === 'moyen' ? 144 : 0;
-  const basePrice = (car.price + transmissionExtra + protectionPlanDailyPrice) * days;
+  const protectionPlanTotal = (protectionPlan === 'moyen' && days >= 10) ? 1000 : (protectionPlan === 'premium' && days >= 10 ? 2000 : 0);
+  const basePrice = (car.price + transmissionExtra) * days + protectionPlanTotal;
   const extrasTotal = extrasData
     .filter(e => selectedExtras.includes(e.id))
     .reduce((sum, e) => sum + (e.isPerDay ? e.price * days : e.price), 0);
@@ -460,6 +560,19 @@ Merci de confirmer la disponibilité.
                   )}
                 </div>
               </div>
+
+              {/* Eligibility Bar for Protection Plan */}
+              {days > 0 && days < 10 && (
+                <div className="mt-6 bg-primary/10 border border-primary/20 rounded-2xl p-4 flex items-center gap-4 animate-in fade-in slide-in-from-top-4 duration-500">
+                  <div className="size-10 rounded-full bg-primary flex items-center justify-center text-text-main flex-shrink-0 shadow-sm">
+                    <span className="material-symbols-outlined font-bold">celebration</span>
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-bold text-text-main font-display text-base">Plus que {10 - days} {10 - days === 1 ? 'jour' : 'jours'} pour l'offre 50% !</p>
+                    <p className="text-sm text-text-muted font-bold">Louez 10 jours ou plus pour débloquer le <span className="text-primary">Plan Moyen à 100 MAD/j</span> au lieu de 200 MAD/j.</p>
+                  </div>
+                </div>
+              )}
             </section>
 
             {/* New Section: Full Vehicle Details */}
@@ -615,7 +728,7 @@ Merci de confirmer la disponibilité.
                 <p className="text-lg font-bold text-text-main font-display">Plans de protection</p>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {/* Basique Plan */}
                 <div
                   onClick={() => setProtectionPlan('basique')}
@@ -671,8 +784,8 @@ Merci de confirmer la disponibilité.
 
                 {/* Moyen Plan */}
                 <div
-                  onClick={() => setProtectionPlan('moyen')}
-                  className={`relative p-6 rounded-2xl border-2 transition-all cursor-pointer shadow-soft ${protectionPlan === 'moyen' ? 'border-green-600 bg-green-50/30' : 'border-border-color bg-white hover:border-primary/30'}`}
+                  onClick={() => days >= 10 && setProtectionPlan('moyen')}
+                  className={`relative p-6 rounded-2xl border-2 transition-all shadow-soft ${protectionPlan === 'moyen' ? 'border-green-600 bg-green-50/30' : (days >= 10 ? 'border-border-color bg-white hover:border-primary/30 cursor-pointer' : 'border-border-color bg-gray-50/50 cursor-not-allowed opacity-70')}`}
                 >
                   {protectionPlan === 'moyen' && (
                     <div className="absolute top-4 right-4 bg-green-600 text-white text-xs font-bold px-3 py-1 rounded-full uppercase">
@@ -685,12 +798,18 @@ Merci de confirmer la disponibilité.
                       <h3 className="text-xl font-black text-text-main font-display">Moyen</h3>
                       <span className="text-primary text-lg">★★</span>
                     </div>
-                    <p className="text-sm font-bold text-text-main">Excédent : 6 000,00 MAD</p>
+                    <p className="text-sm font-bold text-text-main flex flex-wrap items-center gap-x-2">
+                      Excédent : <span className="line-through text-red-500 opacity-60">6 000,00 MAD</span>
+                      <span className="text-green-600 font-black uppercase tracking-tight">Blockage : 3000 MAD</span>
+                    </p>
                   </div>
 
                   <div className="mb-6">
-                    <p className="text-2xl font-black text-text-main font-display">144,00 MAD<span className="text-sm font-normal">/jour</span></p>
-                    <p className="text-xs text-text-muted font-bold">TOTAL {(144 * days).toFixed(2)} MAD</p>
+                    <p className="text-2xl font-black text-text-main font-display">
+                      {days >= 10 ? (1000 / days).toFixed(2) : '100.00'} MAD<span className="text-sm font-normal">/jour</span>
+                    </p>
+                    <p className="text-xs text-text-muted font-bold text-green-600">OFFRE FIXE 1000 MAD / 10j+</p>
+                    <p className="text-xs text-text-muted font-bold">TOTAL 1000.00 MAD</p>
                   </div>
 
                   <div className="space-y-3 mb-6">
@@ -713,12 +832,87 @@ Merci de confirmer la disponibilité.
                   </div>
 
                   <button
+                    disabled={days < 10 || protectionPlan === 'moyen'}
+                    onClick={(e) => {
+                      if (days < 10) {
+                        e.stopPropagation();
+                        return;
+                      }
+                      setProtectionPlan('moyen');
+                    }}
                     className={`w-full py-3 rounded-xl font-bold transition-all ${protectionPlan === 'moyen'
-                      ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                      : 'bg-primary text-text-main hover:shadow-lg'
+                      ? 'bg-gray-100 text-gray-400 shadow-none'
+                      : (days >= 10 ? 'bg-primary text-text-main hover:shadow-lg' : 'bg-gray-100 text-gray-400')
                       }`}
                   >
-                    {protectionPlan === 'moyen' ? 'Sélectionné' : 'Sélectionner'}
+                    {days < 10 ? `Disponible dès 10j` : (protectionPlan === 'moyen' ? 'Sélectionné' : 'Sélectionner')}
+                  </button>
+                </div>
+
+                {/* Premium Plan */}
+                <div
+                  onClick={() => days >= 10 && setProtectionPlan('premium')}
+                  className={`relative p-6 rounded-2xl border-2 transition-all shadow-soft ${protectionPlan === 'premium' ? 'border-green-600 bg-green-50/30' : (days >= 10 ? 'border-border-color bg-white hover:border-primary/30 cursor-pointer' : 'border-border-color bg-gray-50/50 cursor-not-allowed opacity-70')}`}
+                >
+                  {protectionPlan === 'premium' && (
+                    <div className="absolute top-4 right-4 bg-green-600 text-white text-xs font-bold px-3 py-1 rounded-full uppercase">
+                      Choisi
+                    </div>
+                  )}
+
+                  <div className="mb-4">
+                    <div className="flex items-center gap-2 mb-1">
+                      <h3 className="text-xl font-black text-text-main font-display">Premium</h3>
+                      <span className="text-primary text-lg">★★★</span>
+                    </div>
+                    <p className="text-sm font-bold text-text-main flex flex-wrap items-center gap-x-2">
+                      Excédent : <span className="line-through text-red-500 opacity-60">10 000,00 MAD</span>
+                      <span className="text-green-600 font-black uppercase tracking-tight">Zero Franchise</span>
+                    </p>
+                  </div>
+
+                  <div className="mb-6">
+                    <p className="text-2xl font-black text-text-main font-display">
+                      {days >= 10 ? (2000 / days).toFixed(2) : '200.00'} MAD<span className="text-sm font-normal">/jour</span>
+                    </p>
+                    <p className="text-xs text-text-muted font-bold text-green-600">OFFRE FIXE 2000 MAD / 10j+</p>
+                    <p className="text-xs text-text-muted font-bold">TOTAL 2000.00 MAD</p>
+                  </div>
+
+                  <div className="space-y-3 mb-6">
+                    <div className="flex items-start gap-2">
+                      <span className="material-symbols-outlined text-green-600 text-lg mt-0.5">check</span>
+                      <p className="text-sm text-text-main font-medium">Protection TOTALE (Zero Franchise)</p>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <span className="material-symbols-outlined text-green-600 text-lg mt-0.5">check</span>
+                      <p className="text-sm text-text-main font-medium">Bris de glace, pneus et assistance 24/7</p>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <span className="material-symbols-outlined text-green-600 text-lg mt-0.5">check</span>
+                      <p className="text-sm text-text-main font-medium">Protection contre les accidents corporels</p>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <span className="material-symbols-outlined text-green-600 text-lg mt-0.5">check</span>
+                      <p className="text-sm text-text-main font-medium">Protection des effets personnels</p>
+                    </div>
+                  </div>
+
+                  <button
+                    disabled={days < 10 || protectionPlan === 'premium'}
+                    onClick={(e) => {
+                      if (days < 10) {
+                        e.stopPropagation();
+                        return;
+                      }
+                      setProtectionPlan('premium');
+                    }}
+                    className={`w-full py-3 rounded-xl font-bold transition-all ${protectionPlan === 'premium'
+                      ? 'bg-gray-100 text-gray-400 shadow-none'
+                      : (days >= 10 ? 'bg-primary text-text-main hover:shadow-lg' : 'bg-gray-100 text-gray-400')
+                      }`}
+                  >
+                    {days < 10 ? `Disponible dès 10j` : (protectionPlan === 'premium' ? 'Sélectionné' : 'Sélectionner')}
                   </button>
                 </div>
 
@@ -774,6 +968,7 @@ Merci de confirmer la disponibilité.
                     value={driverName}
                     onChange={(e) => setDriverName(e.target.value)}
                     className="h-14 px-4 rounded-xl border border-border-color bg-background-light focus:ring-2 focus:ring-primary focus:border-primary transition-all text-text-main outline-none font-body"
+                    required
                   />
                   <input
                     type="tel"
@@ -781,29 +976,66 @@ Merci de confirmer la disponibilité.
                     value={driverPhone}
                     onChange={(e) => setDriverPhone(e.target.value)}
                     className="h-14 px-4 rounded-xl border border-border-color bg-background-light focus:ring-2 focus:ring-primary focus:border-primary transition-all text-text-main outline-none font-body"
+                    required
+                  />
+                  <input
+                    type="email"
+                    placeholder="Adresse Email"
+                    value={driverEmail}
+                    onChange={(e) => setDriverEmail(e.target.value)}
+                    className="h-14 px-4 rounded-xl border border-border-color bg-background-light focus:ring-2 focus:ring-primary focus:border-primary transition-all text-text-main outline-none font-body"
+                    required
                   />
                   <input
                     type="text"
                     placeholder="CIN / Passeport"
                     value={driverId}
                     onChange={(e) => setDriverId(e.target.value)}
-                    className="h-14 px-4 rounded-xl border border-border-color bg-background-light focus:ring-2 focus:ring-primary focus:border-primary transition-all text-text-main outline-none font-body md:col-span-2"
+                    className="h-14 px-4 rounded-xl border border-border-color bg-background-light focus:ring-2 focus:ring-primary focus:border-primary transition-all text-text-main outline-none font-body"
+                    required
+                  />
+                  <input
+                    type="text"
+                    placeholder="Numéro de Permis"
+                    value={driverLicense}
+                    onChange={(e) => setDriverLicense(e.target.value)}
+                    className="h-14 px-4 rounded-xl border border-border-color bg-background-light focus:ring-2 focus:ring-primary focus:border-primary transition-all text-text-main outline-none font-body"
+                    required
+                  />
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-[10px] font-extrabold text-text-muted uppercase tracking-wider ml-1">Date de Naissance</label>
+                    <input
+                      type="date"
+                      value={driverDOB}
+                      onChange={(e) => setDriverDOB(e.target.value)}
+                      className="w-full h-14 px-4 rounded-xl border border-border-color bg-background-light focus:ring-2 focus:ring-primary focus:border-primary transition-all text-text-main outline-none font-body"
+                      required
+                    />
+                  </div>
+                  <input
+                    type="text"
+                    placeholder="Adresse Complète"
+                    value={driverAddress}
+                    onChange={(e) => setDriverAddress(e.target.value)}
+                    className="h-14 px-4 rounded-xl border border-border-color bg-background-light focus:ring-2 focus:ring-primary focus:border-primary transition-all text-text-main outline-none font-body"
+                    required
                   />
                 </div>
 
                 {selectedExtras.includes('driver') && (
-                  <div className="animate-in fade-in slide-in-from-top-4 duration-500">
+                  <div className="animate-in fade-in slide-in-from-top-4 duration-500 mt-10">
                     <h3 className="text-lg font-bold mb-4 font-display flex items-center gap-2">
                       <span className="material-symbols-outlined text-primary">person_add</span>
                       Informations du 2ème Conducteur
                     </h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <input
                         type="text"
                         placeholder="Nom Complet (2ème Conducteur)"
                         value={secondDriverName}
                         onChange={(e) => setSecondDriverName(e.target.value)}
                         className="h-14 px-4 rounded-xl border border-border-color bg-background-light focus:ring-2 focus:ring-primary focus:border-primary transition-all text-text-main outline-none font-body"
+                        required
                       />
                       <input
                         type="tel"
@@ -811,13 +1043,41 @@ Merci de confirmer la disponibilité.
                         value={secondDriverPhone}
                         onChange={(e) => setSecondDriverPhone(e.target.value)}
                         className="h-14 px-4 rounded-xl border border-border-color bg-background-light focus:ring-2 focus:ring-primary focus:border-primary transition-all text-text-main outline-none font-body"
+                        required
                       />
                       <input
                         type="text"
                         placeholder="CIN / Passeport (2ème Conducteur)"
                         value={secondDriverId}
                         onChange={(e) => setSecondDriverId(e.target.value)}
-                        className="h-14 px-4 rounded-xl border border-border-color bg-background-light focus:ring-2 focus:ring-primary focus:border-primary transition-all text-text-main outline-none font-body md:col-span-2"
+                        className="h-14 px-4 rounded-xl border border-border-color bg-background-light focus:ring-2 focus:ring-primary focus:border-primary transition-all text-text-main outline-none font-body"
+                        required
+                      />
+                      <input
+                        type="text"
+                        placeholder="Numéro de Permis (2ème Conducteur)"
+                        value={secondDriverLicense}
+                        onChange={(e) => setSecondDriverLicense(e.target.value)}
+                        className="h-14 px-4 rounded-xl border border-border-color bg-background-light focus:ring-2 focus:ring-primary focus:border-primary transition-all text-text-main outline-none font-body"
+                        required
+                      />
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-[10px] font-extrabold text-text-muted uppercase tracking-wider ml-1">Date de Naissance (2ème Conducteur)</label>
+                        <input
+                          type="date"
+                          value={secondDriverDOB}
+                          onChange={(e) => setSecondDriverDOB(e.target.value)}
+                          className="w-full h-14 px-4 rounded-xl border border-border-color bg-background-light focus:ring-2 focus:ring-primary focus:border-primary transition-all text-text-main outline-none font-body"
+                          required
+                        />
+                      </div>
+                      <input
+                        type="text"
+                        placeholder="Adresse Complète (2ème Conducteur)"
+                        value={secondDriverAddress}
+                        onChange={(e) => setSecondDriverAddress(e.target.value)}
+                        className="h-14 px-4 rounded-xl border border-border-color bg-background-light focus:ring-2 focus:ring-primary focus:border-primary transition-all text-text-main outline-none font-body"
+                        required
                       />
                     </div>
                   </div>
@@ -922,11 +1182,11 @@ Merci de confirmer la disponibilité.
                     </div>
                     <div className="flex justify-between">
                       <span className="text-text-muted">Tarif par jour</span>
-                      <span className="font-bold text-text-main">{car.price + transmissionExtra + protectionPlanDailyPrice} MAD</span>
+                      <span className="font-bold text-text-main">{(car.price + transmissionExtra + (days >= 10 ? protectionPlanTotal / days : 0)).toFixed(2)} MAD</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-text-muted">Protection ({protectionPlan === 'moyen' ? 'Moyen' : 'Basique'})</span>
-                      <span className="font-bold text-text-main">{(protectionPlanDailyPrice * days).toFixed(2)} MAD</span>
+                      <span className="text-text-muted">Protection ({protectionPlan === 'moyen' ? 'Moyen' : (protectionPlan === 'premium' ? 'Premium' : 'Basique')})</span>
+                      <span className="font-bold text-text-main">{protectionPlanTotal.toFixed(2)} MAD</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-text-muted">Total Options</span>
@@ -945,10 +1205,17 @@ Merci de confirmer la disponibilité.
                   </div>
                   <button
                     onClick={handleConfirmReservation}
-                    className="w-full mt-4 h-14 bg-gradient-to-r from-primary to-yellow-400 rounded-full text-text-main font-bold text-lg shadow-soft hover:shadow-lg hover:scale-[1.02] transition-all flex items-center justify-center gap-2 font-display"
+                    disabled={isSending}
+                    className="w-full mt-4 h-14 bg-gradient-to-r from-primary to-yellow-400 rounded-full text-text-main font-bold text-lg shadow-soft hover:shadow-lg hover:scale-[1.02] transition-all flex items-center justify-center gap-2 font-display disabled:opacity-70 disabled:cursor-not-allowed"
                   >
-                    Confirmer la Réservation
-                    <span className="material-symbols-outlined">arrow_forward</span>
+                    {isSending ? (
+                      <div className="size-6 border-4 border-text-main/20 border-t-text-main animate-spin rounded-full" />
+                    ) : (
+                      <>
+                        Confirmer la Réservation
+                        <span className="material-symbols-outlined">arrow_forward</span>
+                      </>
+                    )}
                   </button>
                   <p className="text-xs text-center text-text-muted mt-3 font-body">En cliquant, vous acceptez nos conditions.</p>
                 </div>
@@ -980,6 +1247,59 @@ Merci de confirmer la disponibilité.
           </div>
         </div>
       </div>
+      {/* Success Modal */}
+      {showSuccessModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300" onClick={() => setShowSuccessModal(false)}></div>
+          <div className="bg-white rounded-[2rem] p-8 md:p-10 max-w-lg w-full relative z-10 shadow-[0_20px_50px_rgba(0,0,0,0.3)] animate-in zoom-in-95 slide-in-from-bottom-5 duration-300">
+            <div className="text-center">
+              {/* Animated Icon Set */}
+              <div className="flex justify-center mb-8 relative">
+                <div className="size-24 bg-green-50 rounded-full flex items-center justify-center relative z-10 border-4 border-white shadow-sm">
+                  <span className="material-symbols-outlined text-green-600 text-5xl">mark_email_read</span>
+                </div>
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 size-32 bg-green-100 rounded-full animate-ping opacity-20"></div>
+              </div>
+
+              <h2 className="text-3xl md:text-4xl font-black text-text-main mb-4 font-display tracking-tight">Vérifiez votre Email !</h2>
+
+              <div className="space-y-4 mb-10">
+                <p className="text-lg text-text-main font-bold font-display">
+                  Une confirmation vient de vous être envoyée.
+                </p>
+                <div className="bg-background-light p-4 rounded-2xl border border-border-color/50 text-sm text-text-muted font-body leading-relaxed text-left relative overflow-hidden">
+                  <div className="absolute right-[-10px] bottom-[-10px] opacity-[0.03] rotate-12">
+                    <span className="material-symbols-outlined text-8xl">verified</span>
+                  </div>
+                  <p className="relative z-10">
+                    Nous avons bien reçu votre demande. Un récapitulatif a été envoyé à <strong>{driverEmail}</strong>. Veuillez vérifier vos courriers indésirables (spam) si nécessaire.
+                  </p>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <div className="pt-2">
+                  <p className="text-xs uppercase font-black text-text-muted tracking-widest mb-4">Pour une confirmation immédiate :</p>
+                  <button
+                    onClick={handleWhatsAppAction}
+                    className="w-full py-4 bg-[#25D366] text-white rounded-2xl font-black text-lg flex items-center justify-center gap-3 hover:bg-[#20ba59] hover:shadow-lg hover:scale-[1.02] transition-all shadow-md group"
+                  >
+                    <span className="material-symbols-outlined group-hover:rotate-12 transition-transform">chat</span>
+                    Confirmer via WhatsApp
+                  </button>
+                </div>
+
+                <button
+                  onClick={() => setShowSuccessModal(false)}
+                  className="w-full py-3 text-text-muted font-bold hover:text-text-main transition-colors text-sm uppercase tracking-widest"
+                >
+                  Continuer sur le site
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

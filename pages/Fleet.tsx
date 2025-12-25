@@ -27,7 +27,7 @@ export const fleetData = [
     category: 'Citadine',
     price: 350,
     currency: 'MAD',
-    image: '/clio24.jpg',
+    image: '/clio.png',
     fuel: 'Diesel',
     transmission: 'Manuelle',
     seats: 5,
@@ -39,7 +39,19 @@ export const fleetData = [
     category: 'Citadine',
     price: 400,
     currency: 'MAD',
-    image: '/clio24.jpg',
+    image: '/clio.png',
+    fuel: 'Diesel',
+    transmission: 'Automatique',
+    seats: 5,
+    tag: 'Ville'
+  },
+  {
+    id: '17',
+    name: 'Renault Clio 5 Auto',
+    category: 'Citadine',
+    price: 400,
+    currency: 'MAD',
+    image: '/clio5noir.png',
     fuel: 'Diesel',
     transmission: 'Automatique',
     seats: 5,
@@ -51,7 +63,7 @@ export const fleetData = [
     category: 'Compacte',
     price: 400,
     currency: 'MAD',
-    image: '/208.jpeg',
+    image: '/208blanc.jpg',
     fuel: 'Essence',
     transmission: 'Automatique',
     seats: 5,
@@ -78,42 +90,6 @@ export const fleetData = [
     tag: 'SUV'
   },
   {
-    id: '15',
-    name: 'Volkswagen Tiguan',
-    category: 'SUV',
-    price: 900,
-    currency: 'MAD',
-    image: '/tiguan.png',
-    fuel: 'Diesel',
-    transmission: 'Automatique',
-    seats: 5,
-    tag: 'SUV'
-  },
-  {
-    id: '13',
-    name: 'Dacia Sandero',
-    category: 'Économique',
-    price: 300,
-    currency: 'MAD',
-    image: '/dacia.jpg',
-    fuel: 'Diesel',
-    transmission: 'Manuelle',
-    seats: 5,
-    tag: 'Ville'
-  },
-  {
-    id: '14',
-    name: 'Citroën C3',
-    category: 'Citadine',
-    price: 350,
-    currency: 'MAD',
-    image: '/c3.jpg',
-    fuel: 'Diesel',
-    transmission: 'Manuelle',
-    seats: 5,
-    tag: 'Ville'
-  },
-  {
     id: '7',
     name: 'Opel Corsa',
     category: 'Citadine',
@@ -125,66 +101,6 @@ export const fleetData = [
     seats: 5,
     tag: 'Ville'
   },
-  {
-    id: '16',
-    name: 'Renault Clio 4',
-    category: 'Économique',
-    price: 250,
-    currency: 'MAD',
-    image: '/clio4.jpeg',
-    fuel: 'Diesel',
-    transmission: 'Manuelle',
-    seats: 5,
-    tag: 'Ville'
-  },
-  {
-    id: '8',
-    name: 'Kia Picanto',
-    category: 'Économique',
-    price: 249,
-    currency: 'MAD',
-    image: '/kia.jpg',
-    fuel: 'Essence',
-    transmission: 'Manuelle',
-    seats: 4,
-    tag: 'Ville'
-  },
-  {
-    id: '9',
-    name: 'Hyundai i20',
-    category: 'Citadine',
-    price: 299,
-    currency: 'MAD',
-    image: '/i20.jpg',
-    fuel: 'Diesel',
-    transmission: 'Manuelle',
-    seats: 5,
-    tag: 'Ville'
-  },
-  {
-    id: '10',
-    name: 'Hyundai i10',
-    category: 'Citadine',
-    price: 299,
-    currency: 'MAD',
-    image: '/i10.png',
-    fuel: 'Essence',
-    transmission: 'Manuelle',
-    seats: 4,
-    tag: 'Ville'
-  },
-  {
-    id: '11',
-    name: 'Volkswagen T-Roc',
-    category: 'SUV',
-    price: 699,
-    currency: 'MAD',
-    image: '/Trok.jpg',
-    fuel: 'Diesel',
-    transmission: 'Automatique',
-    seats: 5,
-    tag: 'SUV'
-  }
 ];
 
 const Fleet: React.FC = () => {

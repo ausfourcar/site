@@ -48,7 +48,7 @@ const featuredCars: Car[] = [
     name: 'Peugeot 308',
     category: 'Berline Premium',
     price: 450,
-    image: '/208.jpeg',
+    image: '/208blnc.jpg',
     transmission: 'Auto',
     fuel: 'Hybrid',
     seats: 5,
@@ -99,7 +99,7 @@ const Home: React.FC = () => {
               <div className="flex -space-x-3">
                 <div className="w-10 h-10 rounded-full border-2 border-white bg-gray-200 bg-cover bg-center" style={{ backgroundImage: 'url("https://lh3.googleusercontent.com/aida-public/AB6AXuBUflpZJ0Sh_F7nBf9RfzvKCsDG5wX0MkkeacGfgoK8NA8XnQM7KGZFIfIRTcZtBBQP6SwDIZuzEP0GrGuLGc-jmKr6H0EBzt3xRzbiFsc0bX-SnJg8CfXiRcHuCiHzZH4ozmzC603eQhokloo23v15Rg-jIm7DfzOM6_ljNC1xRh9sZJZ2pl3zDPi6pnXQwo4qvDUn04RThFMLoTMuzocVftmFvp1-U-DTH5y8UG4Yf5KJP-XKLDuozuQam3YeqpcycgND-XmLlRs")' }}></div>
                 <div className="w-10 h-10 rounded-full border-2 border-white bg-gray-300 bg-cover bg-center" style={{ backgroundImage: 'url("https://lh3.googleusercontent.com/aida-public/AB6AXuAL26LqBKFn74XJsP7lz10lUr4yAgj4dk8ruAdkG7cEcAixgYatPif6BT88Vurg-LJQkpOGKrWBqlOfv5h1_omYb37zb-7yV_ADz6_FEktZdPNhtASU5DUVCvbCPw9myyhvTuxyKg8PTE2w9il4_fo-D1zj0TDZ6kxat37wKQkTogjcqwl2Hg42AQjQ7zmU_eRi-s4gRFMLBUGeaTE_Vo5LX4XRN1L5oV8hTD4WEEEwITPoH_wG-sSNblk7p2_YA8XQDWmYhTAJ4Og")' }}></div>
-                <div className="w-10 h-10 rounded-full border-2 border-white bg-gray-400 bg-cover bg-center" style={{ backgroundImage: 'url("https://lh3.googleusercontent.com/aida-public/AB6AXuDE2but3N3FoyzInoOHyATatJ1VxYW56rDNFeOlO4gwmOAuQEsiq6x07S6irhLk7uV38BQNCnR6Qbfn6O3WtrgtHnQ-5bhad2BgWVDMPx4QhKbtzuaKN3NMmXeDO3AjAKIpwqdOY2Ol7yomDbqDZ4MWn2AfEOyFu5MsKWF6VMdBEl-qxZY9vP14qQ26QiM7uk6bmxWQSoCd-uxVTYnygbBFuXuSBIE0HWB4ZpPgYm7kcDJ6GY74OEVnRtjJC0gY9TT49sftE1DU1fI")' }}></div>
+                <div className="w-10 h-10 rounded-full border-2 border-white bg-gray-400 bg-cover bg-center" style={{ backgroundImage: 'url("https://lh3.googleusercontent.com/aida-public/AB6AXuDE2but3N3FoyzInoOHyATatJ1VxYW56rDNFeOlO4gwmOAuQEsiq6x07S6irhLk7uV38BQNCnR6Qbfn6O3WtrgtHnQ-5bhad2BgWVDMPx4QhKbtzuaKN3NMmXeDO3AjAKIpwqdOY2Ol7yomDbqDZ4MWn2AfEOyFu5MsKWF6VMdBEl-qxZY9vP14qQ26QiM7uk6bmxWQSoCd-uxVTYnygbBFuXuSBIE0HWB4ZpPgM7kcDJ6GY74OEVnRtjJC0gY9TT49sftE1DU1fI")' }}></div>
               </div>
               <div className="text-sm font-medium text-gray-500 font-body">
                 <span className="text-text-main font-bold">1000+</span> Clients Satisfaits
@@ -110,9 +110,9 @@ const Home: React.FC = () => {
             {/* Abstract geometric shapes behind car */}
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-primary/20 via-transparent to-transparent"></div>
             <div className="relative w-full aspect-[4/3] flex items-center justify-center">
-              <img 
-                src="https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&w=1000&q=80" 
-                alt="Voyage en voiture au Maroc" 
+              <img
+                src="https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&w=1000&q=80"
+                alt="Voyage en voiture au Maroc"
                 className="object-cover w-full h-full rounded-2xl shadow-2xl transition-transform duration-700 ease-out group-hover:scale-[1.02]"
               />
             </div>
@@ -163,66 +163,7 @@ const Home: React.FC = () => {
         </div>
       </section>
 
-      {/* Featured Fleet Section */}
-      <section id="fleet" className="py-24 bg-background-light">
-        <div className="container mx-auto px-4 max-w-7xl">
-          <div className="flex justify-between items-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold tracking-tight font-display">Flotte en <span className="relative z-10 after:absolute after:bottom-1 after:left-0 after:w-full after:h-3 after:bg-primary/30 after:-z-10">Vedette</span></h2>
-            <div className="flex gap-2">
-              <Link to="/fleet" className="text-sm font-bold text-primary hover:text-text-main transition-colors flex items-center gap-1">
-                Voir Tout <span className="material-symbols-outlined text-sm">arrow_forward</span>
-              </Link>
-            </div>
-          </div>
-          
-          <div className="flex overflow-x-auto pb-12 gap-6 snap-x snap-mandatory scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0">
-            {featuredCars.map((car) => (
-              <div key={car.id} className="min-w-[300px] md:min-w-[360px] snap-center">
-                <div className="bg-white rounded-2xl border border-gray-100 p-4 h-full flex flex-col hover:shadow-lg transition-all duration-300 hover:border-primary/50">
-                  <div className="relative w-full aspect-[16/10] rounded-xl overflow-hidden bg-gray-50 mb-4 group">
-                    <div className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-110" style={{ backgroundImage: `url("${resolveImageSrc(car.image)}")` }}></div>
-                    <div className={`absolute top-3 right-3 backdrop-blur px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 shadow-sm border ${car.available ? 'bg-white/90 text-green-700' : 'bg-red-50/90 text-red-700 border-red-100'}`}>
-                      <span className={`w-1.5 h-1.5 rounded-full ${car.available ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`}></span>
-                      {car.available ? 'Disponible' : 'Réservé'}
-                    </div>
-                  </div>
-                  <div className="flex flex-col grow">
-                    <div className="flex justify-between items-start mb-2">
-                      <div>
-                        <h3 className="text-xl font-bold text-text-main font-display">{car.name}</h3>
-                        <p className="text-xs text-gray-400 font-medium uppercase tracking-wide font-display">{car.category}</p>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-lg font-bold text-text-main font-display">{car.price} MAD</p>
-                        <p className="text-xs text-gray-500 font-body">/ jour</p>
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-3 gap-2 py-4 border-t border-gray-100 mt-auto">
-                      <div className="flex flex-col items-center gap-1">
-                        <span className="material-symbols-outlined text-gray-400 text-lg">settings</span>
-                        <span className="text-[10px] text-gray-500 font-medium font-body">{car.transmission === 'Manual' ? 'Manuelle' : 'Automatique'}</span>
-                      </div>
-                      <div className="flex flex-col items-center gap-1 border-l border-gray-100">
-                        <span className="material-symbols-outlined text-gray-400 text-lg">local_gas_station</span>
-                        <span className="text-[10px] text-gray-500 font-medium font-body">{car.fuel === 'Petrol' ? 'Essence' : car.fuel === 'Hybrid' ? 'Hybride' : car.fuel}</span>
-                      </div>
-                      <div className="flex flex-col items-center gap-1 border-l border-gray-100">
-                        <span className="material-symbols-outlined text-gray-400 text-lg">person</span>
-                        <span className="text-[10px] text-gray-500 font-medium font-body">{car.seats} Places</span>
-                      </div>
-                    </div>
-                    {car.available ? (
-                      <Link to="/reservation" state={{ car }} className="w-full btn-gold-gradient py-3 rounded-xl font-bold text-sm text-white mt-2 flex justify-center font-display">Louer</Link>
-                    ) : (
-                      <button disabled className="w-full bg-gray-100 text-gray-400 py-3 rounded-xl font-bold text-sm cursor-not-allowed mt-2 font-display">Indisponible</button>
-                    )}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+
     </>
   );
 };
