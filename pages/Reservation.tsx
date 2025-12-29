@@ -2,6 +2,69 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useLocation, Navigate } from 'react-router-dom';
 import emailjs from '@emailjs/browser';
 import { fleetData } from './Fleet';
+import PhoneInput from 'react-phone-input-2';
+import 'react-phone-input-2/lib/style.css';
+import { parsePhoneNumberFromString } from 'libphonenumber-js';
+
+// Validation functions
+const validatePassport = (value: string): { isValid: boolean; error: string } => {
+  const trimmed = value.trim().toUpperCase();
+  if (!trimmed) return { isValid: false, error: 'Le numéro de passeport est requis' };
+  if (!/^[A-Z0-9]{6,12}$/.test(trimmed)) {
+    return { 
+      isValid: false, 
+      error: 'Le numéro de passeport doit contenir 6 à 12 caractères alphanumériques (majuscules uniquement)' 
+    };
+  }
+  return { isValid: true, error: '' };
+};
+
+const validateNationalId = (value: string, country: string): { isValid: boolean; error: string } => {
+  const trimmed = value.trim();
+  if (!trimmed) return { isValid: false, error: `Le numéro de CIN${country ? ` (${country})` : ''} est requis` };
+  if (trimmed.length < 5 || trimmed.length > 20) {
+    return { 
+      isValid: false, 
+      error: `Le numéro de CIN${country ? ` (${country})` : ''} doit contenir entre 5 et 20 caractères` 
+    };
+  }
+  return { isValid: true, error: '' };
+};
+
+const validateDrivingLicense = (value: string): { isValid: boolean; error: string } => {
+  const trimmed = value.trim();
+  if (!trimmed) return { isValid: false, error: 'Le numéro de permis est requis' };
+  if (!/^[A-Z0-9\/\- ]+$/.test(trimmed)) {
+    return { 
+      isValid: false, 
+      error: 'Le numéro de permis ne peut contenir que des lettres, chiffres, / et -' 
+    };
+  }
+  return { isValid: true, error: '' };
+};
+
+const validatePhoneNumber = (value: string, countryIso2: string): { isValid: boolean; error: string } => {
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return { isValid: false, error: 'Le numéro de téléphone est requis' };
+  }
+
+  // libphonenumber-js expects ISO2 in upper case
+  const iso2 = (countryIso2 || '').toUpperCase();
+  const withPlus = trimmed.startsWith('+') ? trimmed : `+${trimmed}`;
+  const parsed = parsePhoneNumberFromString(withPlus, iso2 as any);
+
+  if (!parsed || !parsed.isValid()) {
+    return { isValid: false, error: 'Numéro de téléphone invalide' };
+  }
+
+  return { isValid: true, error: '' };
+};
+
+const handlePhoneChange = (value: string, setPhone: (value: string) => void) => {
+  // react-phone-input-2 gives us digits only (no +). We'll store digits only.
+  setPhone(value);
+};
 
 const resolveImageSrc = (src?: string) => {
   if (!src) return '';
@@ -47,17 +110,29 @@ const Reservation: React.FC = () => {
   // Driver Info State
   const [driverName, setDriverName] = useState("");
   const [driverPhone, setDriverPhone] = useState("");
+  const [driverPhoneError, setDriverPhoneError] = useState("");
+  const [driverPhoneCountry, setDriverPhoneCountry] = useState('ma');
   const [driverEmail, setDriverEmail] = useState("");
   const [driverId, setDriverId] = useState("");
+  const [driverIdError, setDriverIdError] = useState("");
+  const [idType, setIdType] = useState<'passport' | 'nationalId'>('nationalId');
+  const [nationalIdCountry, setNationalIdCountry] = useState('MA');
   const [driverLicense, setDriverLicense] = useState("");
-  const [driverDOB, setDriverDOB] = useState("");
+  const [driverLicenseError, setDriverLicenseError] = useState("");
+  const [driverAge, setDriverAge] = useState("");
   const [driverAddress, setDriverAddress] = useState("");
 
   const [secondDriverName, setSecondDriverName] = useState("");
+  const [secondDriverAge, setSecondDriverAge] = useState("");
   const [secondDriverPhone, setSecondDriverPhone] = useState("");
+  const [secondDriverPhoneError, setSecondDriverPhoneError] = useState("");
+  const [secondDriverPhoneCountry, setSecondDriverPhoneCountry] = useState('ma');
   const [secondDriverId, setSecondDriverId] = useState("");
+  const [secondDriverIdError, setSecondDriverIdError] = useState("");
+  const [secondIdType, setSecondIdType] = useState<'passport' | 'nationalId'>('nationalId');
+  const [secondNationalIdCountry, setSecondNationalIdCountry] = useState('MA');
   const [secondDriverLicense, setSecondDriverLicense] = useState("");
-  const [secondDriverDOB, setSecondDriverDOB] = useState("");
+  const [secondDriverLicenseError, setSecondDriverLicenseError] = useState("");
   const [secondDriverAddress, setSecondDriverAddress] = useState("");
 
   // Location State
@@ -187,7 +262,7 @@ const Reservation: React.FC = () => {
     const extrasTotal = extrasData
       .filter(e => selectedExtras.includes(e.id))
       .reduce((sum, e) => sum + (e.isPerDay ? e.price * days : e.price), 0);
-    const taxes = (basePrice + extrasTotal) * 0.20;
+    const taxes = (basePrice + extrasTotal) * 0.20; // 20% VAT
     const grandTotal = basePrice + extrasTotal + taxes;
 
     const finalPickupLocation = pickupLocation === 'autre' ? customPickupLocation : pickupLocation;
@@ -197,13 +272,25 @@ const Reservation: React.FC = () => {
     const isSecondDriverSelected = selectedExtras.includes('driver');
 
     // Validation
+    const idValidation = idType === 'passport'
+      ? validatePassport(driverId)
+      : validateNationalId(driverId, nationalIdCountry);
+    const licenseValidation = validateDrivingLicense(driverLicense);
+    const phoneValidation = validatePhoneNumber(driverPhone, driverPhoneCountry);
+    
+    if (!idValidation.isValid) setDriverIdError(idValidation.error);
+    if (!licenseValidation.isValid) setDriverLicenseError(licenseValidation.error);
+    if (!phoneValidation.isValid) setDriverPhoneError(phoneValidation.error);
+
     const missingPrimary = [];
     if (!driverName.trim()) missingPrimary.push("Nom Complet");
     if (!driverPhone.trim()) missingPrimary.push("Téléphone");
     if (!driverEmail.trim()) missingPrimary.push("Email");
-    if (!driverId.trim()) missingPrimary.push("CIN / Passport");
+    if (!driverId.trim()) missingPrimary.push(idType === 'passport' ? "Numéro de Passeport" : "Numéro de CIN");
+    else if (!idValidation.isValid) missingPrimary.push(idType === 'passport' ? "Format de passeport invalide" : "Format de CIN invalide");
     if (!driverLicense.trim()) missingPrimary.push("N° Permis");
-    if (!driverDOB) missingPrimary.push("Date de Naissance");
+    else if (!licenseValidation.isValid) missingPrimary.push("Format de permis invalide");
+    if (!driverAge) missingPrimary.push("Âge");
     if (!driverAddress.trim()) missingPrimary.push("Adresse");
 
     if (missingPrimary.length > 0) {
@@ -212,12 +299,25 @@ const Reservation: React.FC = () => {
     }
 
     if (isSecondDriverSelected) {
+      // Validate second driver fields
+      const secondIdValidation = secondIdType === 'passport'
+        ? validatePassport(secondDriverId)
+        : validateNationalId(secondDriverId, secondNationalIdCountry);
+      const secondLicenseValidation = validateDrivingLicense(secondDriverLicense);
+      const secondPhoneValidation = validatePhoneNumber(secondDriverPhone, secondDriverPhoneCountry);
+      
+      if (!secondIdValidation.isValid) setSecondDriverIdError(secondIdValidation.error);
+      if (!secondLicenseValidation.isValid) setSecondDriverLicenseError(secondLicenseValidation.error);
+      if (!secondPhoneValidation.isValid) setSecondDriverPhoneError(secondPhoneValidation.error);
+
       const missingSecondary = [];
       if (!secondDriverName.trim()) missingSecondary.push("Nom Complet");
       if (!secondDriverPhone.trim()) missingSecondary.push("Téléphone");
-      if (!secondDriverId.trim()) missingSecondary.push("CIN / Passport");
+      if (!secondDriverId.trim()) missingSecondary.push(secondIdType === 'passport' ? "Numéro de Passeport" : "Numéro de CIN");
+      else if (!secondIdValidation.isValid) missingSecondary.push(secondIdType === 'passport' ? "Format de passeport invalide" : "Format de CIN invalide");
       if (!secondDriverLicense.trim()) missingSecondary.push("N° Permis");
-      if (!secondDriverDOB) missingSecondary.push("Date de Naissance");
+      else if (!secondLicenseValidation.isValid) missingSecondary.push("Format de permis invalide");
+      if (!secondDriverAge) missingSecondary.push("Âge");
       if (!secondDriverAddress.trim()) missingSecondary.push("Adresse");
 
       if (missingSecondary.length > 0) {
@@ -246,7 +346,7 @@ const Reservation: React.FC = () => {
       driverEmail,
       driverId,
       driverLicense,
-      driverDOB,
+      driverAge,
       driverAddress,
 
       // Driver 2 - Flattened to simple strings to avoid template logic issues
@@ -254,7 +354,7 @@ const Reservation: React.FC = () => {
       secondDriverPhone: isSecondDriverSelected ? secondDriverPhone : 'NON',
       secondDriverId: isSecondDriverSelected ? secondDriverId : 'NON',
       secondDriverLicense: isSecondDriverSelected ? secondDriverLicense : 'NON',
-      secondDriverDOB: isSecondDriverSelected ? secondDriverDOB : 'NON',
+      secondDriverAge: isSecondDriverSelected ? secondDriverAge : 'NON',
       secondDriverAddress: isSecondDriverSelected ? secondDriverAddress : 'NON',
 
       extras: extrasText,
@@ -300,7 +400,7 @@ const Reservation: React.FC = () => {
 👤 *Conducteur*: ${reservationDetails.driverName}
 🆔 *CIN/Pass*: ${reservationDetails.driverId}
 🪪 *Permis*: ${reservationDetails.driverLicense}
-🎂 *Né(e) le*: ${reservationDetails.driverDOB}
+→🎂 *Âge*: ${reservationDetails.driverAge} ans
 📱 *Tél*: ${reservationDetails.driverPhone}
 📧 *Email*: ${reservationDetails.driverEmail}
 🏠 *Adr*: ${reservationDetails.driverAddress}
@@ -308,7 +408,7 @@ ${selectedExtras.includes('driver') ? `----------------------------
 👤 *2ème Cond.*: ${reservationDetails.secondDriverName}
 🆔 *CIN/Pass 2*: ${reservationDetails.secondDriverId}
 🪪 *Permis 2*: ${reservationDetails.secondDriverLicense}
-🎂 *Né(e) le 2*: ${reservationDetails.secondDriverDOB}
+→🎂 *Âge 2*: ${reservationDetails.secondDriverAge} ans
 📱 *Tél 2*: ${reservationDetails.secondDriverPhone}
 🏠 *Adr 2*: ${reservationDetails.secondDriverAddress}` : ''}
 ----------------------------
@@ -673,16 +773,16 @@ Merci de confirmer la disponibilité.
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div
                   onClick={() => setMileageType('limited')}
-                  className={`p-6 rounded-2xl border transition-all cursor-pointer shadow-soft group ${mileageType === 'limited' ? 'border-primary bg-primary/5' : 'border-border-color bg-white hover:border-primary/30'}`}
+                  className={`p-6 rounded-2xl border transition-all cursor-pointer shadow-soft group ${mileageType === 'limited' ? 'border-primary bg-primary/5' : 'border-border-color bg-white hover:border-primary/50'}`}
                 >
                   <div className="flex justify-between items-start mb-3">
                     <div className="flex items-center gap-3">
-                      <div className={`size-10 rounded-lg flex items-center justify-center transition-colors ${mileageType === 'limited' ? 'bg-primary text-white' : 'bg-gray-100 text-text-muted group-hover:bg-primary/10 group-hover:text-primary'}`}>
+                      <div className={`size-10 rounded-lg flex items-center justify-center transition-colors ${mileageType === 'limited' ? 'bg-primary text-white' : 'bg-gray-100 text-text-muted group-hover:bg-primary group-hover:text-text-main'}`}>
                         <span className="material-symbols-outlined">distance</span>
                       </div>
                       <div>
                         <h3 className="font-bold text-text-main font-display">Limité</h3>
-                        <p className="text-xs text-text-muted font-bold font-display">250 km / jour</p>
+                        <p className="text-xs text-text-muted font-body">250 km / jour</p>
                       </div>
                     </div>
                     <div className={`size-6 rounded-full border-2 flex items-center justify-center transition-colors ${mileageType === 'limited' ? 'border-primary bg-primary' : 'border-border-color'}`}>
@@ -696,16 +796,16 @@ Merci de confirmer la disponibilité.
 
                 <div
                   onClick={() => setMileageType('unlimited')}
-                  className={`p-6 rounded-2xl border transition-all cursor-pointer shadow-soft group ${mileageType === 'unlimited' ? 'border-primary bg-primary/5' : 'border-border-color bg-white hover:border-primary/30'}`}
+                  className={`p-6 rounded-2xl border transition-all cursor-pointer shadow-soft group ${mileageType === 'unlimited' ? 'border-primary bg-primary/5' : 'border-border-color bg-white hover:border-primary/50'}`}
                 >
                   <div className="flex justify-between items-start mb-3">
                     <div className="flex items-center gap-3">
-                      <div className={`size-10 rounded-lg flex items-center justify-center transition-colors ${mileageType === 'unlimited' ? 'bg-primary text-white' : 'bg-gray-100 text-text-muted group-hover:bg-primary/10 group-hover:text-primary'}`}>
+                      <div className={`size-10 rounded-lg flex items-center justify-center transition-colors ${mileageType === 'unlimited' ? 'bg-primary text-white' : 'bg-gray-100 text-text-muted group-hover:bg-primary group-hover:text-text-main'}`}>
                         <span className="material-symbols-outlined">all_inclusive</span>
                       </div>
                       <div>
                         <h3 className="font-bold text-text-main font-display">Illimité</h3>
-                        <p className="text-xs text-text-muted font-bold font-display">Liberté Totale</p>
+                        <p className="text-xs text-text-muted font-body">Liberté Totale</p>
                       </div>
                     </div>
                     <div className={`size-6 rounded-full border-2 flex items-center justify-center transition-colors ${mileageType === 'unlimited' ? 'border-primary bg-primary' : 'border-border-color'}`}>
@@ -808,7 +908,6 @@ Merci de confirmer la disponibilité.
                     <p className="text-2xl font-black text-text-main font-display">
                       {days >= 10 ? (1000 / days).toFixed(2) : '100.00'} MAD<span className="text-sm font-normal">/jour</span>
                     </p>
-                    <p className="text-xs text-text-muted font-bold text-green-600">OFFRE FIXE 1000 MAD / 10j+</p>
                     <p className="text-xs text-text-muted font-bold">TOTAL 1000.00 MAD</p>
                   </div>
 
@@ -875,7 +974,6 @@ Merci de confirmer la disponibilité.
                     <p className="text-2xl font-black text-text-main font-display">
                       {days >= 10 ? (2000 / days).toFixed(2) : '200.00'} MAD<span className="text-sm font-normal">/jour</span>
                     </p>
-                    <p className="text-xs text-text-muted font-bold text-green-600">OFFRE FIXE 2000 MAD / 10j+</p>
                     <p className="text-xs text-text-muted font-bold">TOTAL 2000.00 MAD</p>
                   </div>
 
@@ -946,7 +1044,7 @@ Merci de confirmer la disponibilité.
                       </p>
                     </div>
                     <div className={`size-6 rounded-full border-2 flex items-center justify-center transition-colors ${selectedExtras.includes(extra.id) ? 'border-primary bg-primary' : 'border-border-color'}`}>
-                      {selectedExtras.includes(extra.id) && <span className="material-symbols-outlined text-white text-sm">check</span>}
+                      {selectedExtras.includes(extra.id) && <div className="size-2 rounded-full bg-white" />}
                     </div>
                   </div>
                 ))}
@@ -970,14 +1068,33 @@ Merci de confirmer la disponibilité.
                     className="h-14 px-4 rounded-xl border border-border-color bg-background-light focus:ring-2 focus:ring-primary focus:border-primary transition-all text-text-main outline-none font-body"
                     required
                   />
-                  <input
-                    type="tel"
-                    placeholder="Numéro de Téléphone"
-                    value={driverPhone}
-                    onChange={(e) => setDriverPhone(e.target.value)}
-                    className="h-14 px-4 rounded-xl border border-border-color bg-background-light focus:ring-2 focus:ring-primary focus:border-primary transition-all text-text-main outline-none font-body"
-                    required
-                  />
+
+                  <div className="space-y-1.5">
+                    <div className="h-14 rounded-xl border border-border-color bg-background-light focus-within:ring-2 focus-within:ring-primary focus-within:border-primary transition-all overflow-hidden">
+                      <PhoneInput
+                        country={driverPhoneCountry}
+                        value={driverPhone}
+                        onChange={(value, data) => {
+                          handlePhoneChange(value, setDriverPhone);
+                          setDriverPhoneCountry(data.countryCode);
+                          if (driverPhoneError) setDriverPhoneError('');
+                        }}
+                        onBlur={() => {
+                          const validation = validatePhoneNumber(driverPhone, driverPhoneCountry);
+                          setDriverPhoneError(validation.error);
+                        }}
+                        inputProps={{ required: true }}
+                        containerClass="w-full h-full"
+                        inputClass="!w-full !h-14 !bg-transparent !border-0 !pl-16 !pr-4 !text-text-main !outline-none font-body"
+                        buttonClass="!h-14 !bg-transparent !border-0 !border-r !border-border-color !rounded-none"
+                        dropdownClass="font-body"
+                      />
+                    </div>
+                    {driverPhoneError && (
+                      <p className="text-red-500 text-xs mt-1 px-2">{driverPhoneError}</p>
+                    )}
+                  </div>
+
                   <input
                     type="email"
                     placeholder="Adresse Email"
@@ -986,32 +1103,116 @@ Merci de confirmer la disponibilité.
                     className="h-14 px-4 rounded-xl border border-border-color bg-background-light focus:ring-2 focus:ring-primary focus:border-primary transition-all text-text-main outline-none font-body"
                     required
                   />
-                  <input
-                    type="text"
-                    placeholder="CIN / Passeport"
-                    value={driverId}
-                    onChange={(e) => setDriverId(e.target.value)}
-                    className="h-14 px-4 rounded-xl border border-border-color bg-background-light focus:ring-2 focus:ring-primary focus:border-primary transition-all text-text-main outline-none font-body"
-                    required
-                  />
-                  <input
-                    type="text"
-                    placeholder="Numéro de Permis"
-                    value={driverLicense}
-                    onChange={(e) => setDriverLicense(e.target.value)}
-                    className="h-14 px-4 rounded-xl border border-border-color bg-background-light focus:ring-2 focus:ring-primary focus:border-primary transition-all text-text-main outline-none font-body"
-                    required
-                  />
-                  <div className="flex flex-col gap-1.5">
-                    <label className="text-[10px] font-extrabold text-text-muted uppercase tracking-wider ml-1">Date de Naissance</label>
+
+                  <div className="space-y-1">
+                    <div className="flex gap-2 mb-1">
+                      <label className="flex items-center">
+                        <input
+                          type="radio"
+                          className="form-radio h-4 w-4 text-primary focus:ring-primary border-gray-300"
+                          checked={idType === 'nationalId'}
+                          onChange={() => setIdType('nationalId')}
+                        />
+                        <span className="ml-2 text-sm text-text-main">CIN</span>
+                      </label>
+                      <label className="flex items-center">
+                        <input
+                          type="radio"
+                          className="form-radio h-4 w-4 text-primary focus:ring-primary border-gray-300"
+                          checked={idType === 'passport'}
+                          onChange={() => setIdType('passport')}
+                        />
+                        <span className="ml-2 text-sm text-text-main">Passeport</span>
+                      </label>
+                    </div>
+
+                    <div className="flex gap-2">
+                      {idType === 'nationalId' && (
+                        <select
+                          value={nationalIdCountry}
+                          onChange={(e) => setNationalIdCountry(e.target.value)}
+                          className="h-14 px-3 rounded-xl border border-border-color bg-background-light focus:ring-2 focus:ring-primary focus:border-primary transition-all text-text-main outline-none font-body text-sm w-24 flex-shrink-0"
+                        >
+                          <option value="MA">🇲🇦 MA</option>
+                          <option value="DZ">🇩🇿 DZ</option>
+                          <option value="TN">🇹🇳 TN</option>
+                          <option value="FR">🇫🇷 FR</option>
+                          <option value="ES">🇪🇸 ES</option>
+                          <option value="OTHER">🌍 Autre</option>
+                        </select>
+                      )}
+
+                      <div className="flex-1">
+                        <input
+                          type="text"
+                          placeholder={idType === 'passport' ? 'Numéro de passeport' : 'Numéro de CIN'}
+                          value={driverId}
+                          onChange={(e) => {
+                            const value = idType === 'passport' ? e.target.value.toUpperCase() : e.target.value;
+                            setDriverId(value);
+                            if (driverIdError) {
+                              const validation = idType === 'passport'
+                                ? validatePassport(value)
+                                : validateNationalId(value, nationalIdCountry);
+                              setDriverIdError(validation.error);
+                            }
+                          }}
+                          onBlur={() => {
+                            const validation = idType === 'passport'
+                              ? validatePassport(driverId)
+                              : validateNationalId(driverId, nationalIdCountry);
+                            setDriverIdError(validation.error);
+                          }}
+                          className={`w-full h-14 px-4 rounded-xl border ${driverIdError ? 'border-red-500' : 'border-border-color'} bg-background-light focus:ring-2 focus:ring-primary focus:border-primary transition-all text-text-main outline-none font-body`}
+                          required
+                        />
+                        {driverIdError && (
+                          <p className="text-red-500 text-xs mt-1">{driverIdError}</p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
                     <input
-                      type="date"
-                      value={driverDOB}
-                      onChange={(e) => setDriverDOB(e.target.value)}
-                      className="w-full h-14 px-4 rounded-xl border border-border-color bg-background-light focus:ring-2 focus:ring-primary focus:border-primary transition-all text-text-main outline-none font-body"
+                      type="text"
+                      placeholder="Numéro de Permis"
+                      value={driverLicense}
+                      onChange={(e) => {
+                        setDriverLicense(e.target.value);
+                        if (driverLicenseError) {
+                          const validation = validateDrivingLicense(e.target.value);
+                          setDriverLicenseError(validation.error);
+                        }
+                      }}
+                      onBlur={() => {
+                        const validation = validateDrivingLicense(driverLicense);
+                        setDriverLicenseError(validation.error);
+                      }}
+                      className={`w-full h-14 px-4 rounded-xl border ${driverLicenseError ? 'border-red-500' : 'border-border-color'} bg-background-light focus:ring-2 focus:ring-primary focus:border-primary transition-all text-text-main outline-none font-body`}
                       required
                     />
+                    <p className="text-xs text-text-muted mt-1">Format: Lettres, chiffres, / et -</p>
+                    {driverLicenseError && (
+                      <p className="text-red-500 text-xs mt-1">{driverLicenseError}</p>
+                    )}
                   </div>
+
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-[10px] font-extrabold text-text-muted uppercase tracking-wider ml-1">Âge</label>
+                    <select
+                      value={driverAge}
+                      onChange={(e) => setDriverAge(e.target.value)}
+                      className="w-full h-14 px-4 rounded-xl border border-border-color bg-background-light focus:ring-2 focus:ring-primary focus:border-primary transition-all text-text-main outline-none font-body"
+                      required
+                    >
+                      <option value="">Sélectionner l'âge</option>
+                      {Array.from({ length: 50 }, (_, i) => 21 + i).map(age => (
+                        <option key={age} value={age}>{age} ans</option>
+                      ))}
+                    </select>
+                  </div>
+
                   <input
                     type="text"
                     placeholder="Adresse Complète"
@@ -1037,40 +1238,142 @@ Merci de confirmer la disponibilité.
                         className="h-14 px-4 rounded-xl border border-border-color bg-background-light focus:ring-2 focus:ring-primary focus:border-primary transition-all text-text-main outline-none font-body"
                         required
                       />
-                      <input
-                        type="tel"
-                        placeholder="Téléphone (2ème Conducteur)"
-                        value={secondDriverPhone}
-                        onChange={(e) => setSecondDriverPhone(e.target.value)}
-                        className="h-14 px-4 rounded-xl border border-border-color bg-background-light focus:ring-2 focus:ring-primary focus:border-primary transition-all text-text-main outline-none font-body"
-                        required
-                      />
-                      <input
-                        type="text"
-                        placeholder="CIN / Passeport (2ème Conducteur)"
-                        value={secondDriverId}
-                        onChange={(e) => setSecondDriverId(e.target.value)}
-                        className="h-14 px-4 rounded-xl border border-border-color bg-background-light focus:ring-2 focus:ring-primary focus:border-primary transition-all text-text-main outline-none font-body"
-                        required
-                      />
-                      <input
-                        type="text"
-                        placeholder="Numéro de Permis (2ème Conducteur)"
-                        value={secondDriverLicense}
-                        onChange={(e) => setSecondDriverLicense(e.target.value)}
-                        className="h-14 px-4 rounded-xl border border-border-color bg-background-light focus:ring-2 focus:ring-primary focus:border-primary transition-all text-text-main outline-none font-body"
-                        required
-                      />
-                      <div className="flex flex-col gap-1.5">
-                        <label className="text-[10px] font-extrabold text-text-muted uppercase tracking-wider ml-1">Date de Naissance (2ème Conducteur)</label>
+
+                      <div className="space-y-1.5">
+                        <div className="h-14 rounded-xl border border-border-color bg-background-light focus-within:ring-2 focus-within:ring-primary focus-within:border-primary transition-all overflow-hidden">
+                          <PhoneInput
+                            country={secondDriverPhoneCountry}
+                            value={secondDriverPhone}
+                            onChange={(value, data) => {
+                              handlePhoneChange(value, setSecondDriverPhone);
+                              setSecondDriverPhoneCountry(data.countryCode);
+                              if (secondDriverPhoneError) setSecondDriverPhoneError('');
+                            }}
+                            onBlur={() => {
+                              const validation = validatePhoneNumber(secondDriverPhone, secondDriverPhoneCountry);
+                              setSecondDriverPhoneError(validation.error);
+                            }}
+                            inputProps={{ required: true }}
+                            containerClass="w-full h-full"
+                            inputClass="!w-full !h-14 !bg-transparent !border-0 !pl-16 !pr-4 !text-text-main !outline-none font-body"
+                            buttonClass="!h-14 !bg-transparent !border-0 !border-r !border-border-color !rounded-none"
+                            dropdownClass="font-body"
+                          />
+                        </div>
+                        {secondDriverPhoneError && (
+                          <p className="text-red-500 text-xs mt-1 px-2">{secondDriverPhoneError}</p>
+                        )}
+                      </div>
+
+                      <div className="space-y-1">
+                        <div className="flex gap-2 mb-1">
+                          <label className="flex items-center">
+                            <input
+                              type="radio"
+                              className="form-radio h-4 w-4 text-primary focus:ring-primary border-gray-300"
+                              checked={secondIdType === 'nationalId'}
+                              onChange={() => setSecondIdType('nationalId')}
+                            />
+                            <span className="ml-2 text-sm text-text-main">CIN</span>
+                          </label>
+                          <label className="flex items-center">
+                            <input
+                              type="radio"
+                              className="form-radio h-4 w-4 text-primary focus:ring-primary border-gray-300"
+                              checked={secondIdType === 'passport'}
+                              onChange={() => setSecondIdType('passport')}
+                            />
+                            <span className="ml-2 text-sm text-text-main">Passeport</span>
+                          </label>
+                        </div>
+
+                        <div className="flex gap-2">
+                          {secondIdType === 'nationalId' && (
+                            <select
+                              value={secondNationalIdCountry}
+                              onChange={(e) => setSecondNationalIdCountry(e.target.value)}
+                              className="h-14 px-3 rounded-xl border border-border-color bg-background-light focus:ring-2 focus:ring-primary focus:border-primary transition-all text-text-main outline-none font-body text-sm w-24 flex-shrink-0"
+                            >
+                              <option value="MA">🇲🇦 MA</option>
+                              <option value="DZ">🇩🇿 DZ</option>
+                              <option value="TN">🇹🇳 TN</option>
+                              <option value="FR">🇫🇷 FR</option>
+                              <option value="ES">🇪🇸 ES</option>
+                              <option value="OTHER">🌍 Autre</option>
+                            </select>
+                          )}
+
+                          <div className="flex-1">
+                            <input
+                              type="text"
+                              placeholder={secondIdType === 'passport' ? 'Numéro de passeport' : 'Numéro de CIN'}
+                              value={secondDriverId}
+                              onChange={(e) => {
+                                const value = secondIdType === 'passport' ? e.target.value.toUpperCase() : e.target.value;
+                                setSecondDriverId(value);
+                                if (secondDriverIdError) {
+                                  const validation = secondIdType === 'passport'
+                                    ? validatePassport(value)
+                                    : validateNationalId(value, secondNationalIdCountry);
+                                  setSecondDriverIdError(validation.error);
+                                }
+                              }}
+                              onBlur={() => {
+                                const validation = secondIdType === 'passport'
+                                  ? validatePassport(secondDriverId)
+                                  : validateNationalId(secondDriverId, secondNationalIdCountry);
+                                setSecondDriverIdError(validation.error);
+                              }}
+                              className={`w-full h-14 px-4 rounded-xl border ${secondDriverIdError ? 'border-red-500' : 'border-border-color'} bg-background-light focus:ring-2 focus:ring-primary focus:border-primary transition-all text-text-main outline-none font-body`}
+                              required
+                            />
+                            {secondDriverIdError && (
+                              <p className="text-red-500 text-xs mt-1">{secondDriverIdError}</p>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div>
                         <input
-                          type="date"
-                          value={secondDriverDOB}
-                          onChange={(e) => setSecondDriverDOB(e.target.value)}
-                          className="w-full h-14 px-4 rounded-xl border border-border-color bg-background-light focus:ring-2 focus:ring-primary focus:border-primary transition-all text-text-main outline-none font-body"
+                          type="text"
+                          placeholder="Numéro de Permis (2ème Conducteur)"
+                          value={secondDriverLicense}
+                          onChange={(e) => {
+                            setSecondDriverLicense(e.target.value);
+                            if (secondDriverLicenseError) {
+                              const validation = validateDrivingLicense(e.target.value);
+                              setSecondDriverLicenseError(validation.error);
+                            }
+                          }}
+                          onBlur={() => {
+                            const validation = validateDrivingLicense(secondDriverLicense);
+                            setSecondDriverLicenseError(validation.error);
+                          }}
+                          className={`w-full h-14 px-4 rounded-xl border ${secondDriverLicenseError ? 'border-red-500' : 'border-border-color'} bg-background-light focus:ring-2 focus:ring-primary focus:border-primary transition-all text-text-main outline-none font-body`}
                           required
                         />
+                        <p className="text-xs text-text-muted mt-1">Format: Lettres, chiffres, / et -</p>
+                        {secondDriverLicenseError && (
+                          <p className="text-red-500 text-xs mt-1">{secondDriverLicenseError}</p>
+                        )}
                       </div>
+
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-[10px] font-extrabold text-text-muted uppercase tracking-wider ml-1">Âge (2ème Conducteur)</label>
+                        <select
+                          value={secondDriverAge}
+                          onChange={(e) => setSecondDriverAge(e.target.value)}
+                          className="w-full h-14 px-4 rounded-xl border border-border-color bg-background-light focus:ring-2 focus:ring-primary focus:border-primary transition-all text-text-main outline-none font-body"
+                          required
+                        >
+                          <option value="">Sélectionner l'âge</option>
+                          {Array.from({ length: 50 }, (_, i) => 21 + i).map(age => (
+                            <option key={age} value={age}>{age} ans</option>
+                          ))}
+                        </select>
+                      </div>
+
                       <input
                         type="text"
                         placeholder="Adresse Complète (2ème Conducteur)"
