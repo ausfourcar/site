@@ -1115,14 +1115,17 @@ Merci de confirmer la disponibilité.
                     )}
                   </div>
 
-                  <input
-                    type="email"
-                    placeholder="Adresse Email"
-                    value={driverEmail}
-                    onChange={(e) => setDriverEmail(e.target.value)}
-                    className="h-14 px-4 rounded-xl border border-border-color bg-background-light focus:ring-2 focus:ring-primary focus:border-primary transition-all text-text-main outline-none font-body"
-                    required
-                  />
+                  <div className="space-y-1">
+                    <input
+                      type="email"
+                      placeholder="Adresse Email"
+                      value={driverEmail}
+                      onChange={(e) => setDriverEmail(e.target.value)}
+                      className="h-14 px-4 w-full rounded-xl border border-border-color bg-background-light focus:ring-2 focus:ring-primary focus:border-primary transition-all text-text-main outline-none font-body"
+                      required
+                    />
+                    <p className="text-text-muted text-[10px] mt-1 ml-1 uppercase tracking-wider font-bold">Exemple: contact@gmail.com</p>
+                  </div>
 
                   <div className="space-y-1">
                     <div className="flex gap-2 mb-1">
@@ -1199,8 +1202,12 @@ Merci de confirmer la disponibilité.
                           className={`w-full h-14 px-4 rounded-xl border ${driverIdError ? 'border-red-500' : 'border-border-color'} bg-background-light focus:ring-2 focus:ring-primary focus:border-primary transition-all text-text-main outline-none font-body`}
                           required
                         />
-                        {driverIdError && (
+                        {driverIdError ? (
                           <p className="text-red-500 text-xs mt-1">{driverIdError}</p>
+                        ) : (
+                          <p className="text-text-muted text-[10px] mt-1 ml-1 uppercase tracking-wider font-bold">
+                            {idType === 'passport' ? 'Exemple: A1234567' : (idType === 'nationalId' ? 'Exemple: CD123456' : 'Exemple: 12345678')}
+                          </p>
                         )}
                       </div>
                     </div>
@@ -1225,9 +1232,10 @@ Merci de confirmer la disponibilité.
                       className={`w-full h-14 px-4 rounded-xl border ${driverLicenseError ? 'border-red-500' : 'border-border-color'} bg-background-light focus:ring-2 focus:ring-primary focus:border-primary transition-all text-text-main outline-none font-body`}
                       required
                     />
-                    <p className="text-xs text-text-muted mt-1">Format: Lettres, chiffres, / et -</p>
-                    {driverLicenseError && (
+                    {driverLicenseError ? (
                       <p className="text-red-500 text-xs mt-1">{driverLicenseError}</p>
+                    ) : (
+                      <p className="text-text-muted text-[10px] mt-1 ml-1 uppercase tracking-wider font-bold">Exemple: 01/234567</p>
                     )}
                   </div>
 
@@ -1373,8 +1381,12 @@ Merci de confirmer la disponibilité.
                               className={`w-full h-14 px-4 rounded-xl border ${secondDriverIdError ? 'border-red-500' : 'border-border-color'} bg-background-light focus:ring-2 focus:ring-primary focus:border-primary transition-all text-text-main outline-none font-body`}
                               required
                             />
-                            {secondDriverIdError && (
+                            {secondDriverIdError ? (
                               <p className="text-red-500 text-xs mt-1">{secondDriverIdError}</p>
+                            ) : (
+                              <p className="text-text-muted text-[10px] mt-1 ml-1 uppercase tracking-wider font-bold">
+                                {secondIdType === 'passport' ? 'Exemple: A1234567' : (secondIdType === 'nationalId' ? 'Exemple: CD123456' : 'Exemple: 12345678')}
+                              </p>
                             )}
                           </div>
                         </div>
@@ -1399,9 +1411,10 @@ Merci de confirmer la disponibilité.
                           className={`w-full h-14 px-4 rounded-xl border ${secondDriverLicenseError ? 'border-red-500' : 'border-border-color'} bg-background-light focus:ring-2 focus:ring-primary focus:border-primary transition-all text-text-main outline-none font-body`}
                           required
                         />
-                        <p className="text-xs text-text-muted mt-1">Format: Lettres, chiffres, / et -</p>
-                        {secondDriverLicenseError && (
+                        {secondDriverLicenseError ? (
                           <p className="text-red-500 text-xs mt-1">{secondDriverLicenseError}</p>
+                        ) : (
+                          <p className="text-text-muted text-[10px] mt-1 ml-1 uppercase tracking-wider font-bold">Exemple: 01/234567</p>
                         )}
                       </div>
 
