@@ -36,24 +36,13 @@ const featuredCars: Car[] = [
     id: '3',
     name: 'Peugeot 208',
     category: 'Citadine Sport',
-    price: 400,
+    price: 299,
     image: '/208.jpeg',
     transmission: 'Manual',
     fuel: 'Diesel',
     seats: 5,
     available: true
   },
-  {
-    id: '4',
-    name: 'Peugeot 308',
-    category: 'Berline Premium',
-    price: 450,
-    image: '/208blnc.jpg',
-    transmission: 'Auto',
-    fuel: 'Hybrid',
-    seats: 5,
-    available: false
-  }
 ];
 
 const Home: React.FC = () => {

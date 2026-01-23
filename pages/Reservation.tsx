@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useLocation, Navigate } from 'react-router-dom';
 import emailjs from '@emailjs/browser';
-import { fleetData } from './Fleet';
+import { fleetData, getCarPrice } from './Fleet';
 import PhoneInput from 'react-phone-input-2';
 import 'react-phone-input-2/lib/style.css';
 import { parsePhoneNumberFromString } from 'libphonenumber-js';
@@ -11,9 +11,9 @@ const validatePassport = (value: string): { isValid: boolean; error: string } =>
   const trimmed = value.trim().toUpperCase();
   if (!trimmed) return { isValid: false, error: 'Le numéro de passeport est requis' };
   if (!/^[A-Z0-9]{6,12}$/.test(trimmed)) {
-    return { 
-      isValid: false, 
-      error: 'Le numéro de passeport doit contenir 6 à 12 caractères alphanumériques (majuscules uniquement)' 
+    return {
+      isValid: false,
+      error: 'Le numéro de passeport doit contenir 6 à 12 caractères alphanumériques (majuscules uniquement)'
     };
   }
   return { isValid: true, error: '' };
@@ -23,9 +23,9 @@ const validateNationalId = (value: string, country: string): { isValid: boolean;
   const trimmed = value.trim();
   if (!trimmed) return { isValid: false, error: `Le numéro de CIN${country ? ` (${country})` : ''} est requis` };
   if (trimmed.length < 5 || trimmed.length > 20) {
-    return { 
-      isValid: false, 
-      error: `Le numéro de CIN${country ? ` (${country})` : ''} doit contenir entre 5 et 20 caractères` 
+    return {
+      isValid: false,
+      error: `Le numéro de CIN${country ? ` (${country})` : ''} doit contenir entre 5 et 20 caractères`
     };
   }
   return { isValid: true, error: '' };
@@ -35,9 +35,21 @@ const validateDrivingLicense = (value: string): { isValid: boolean; error: strin
   const trimmed = value.trim();
   if (!trimmed) return { isValid: false, error: 'Le numéro de permis est requis' };
   if (!/^[A-Z0-9\/\- ]+$/.test(trimmed)) {
-    return { 
-      isValid: false, 
-      error: 'Le numéro de permis ne peut contenir que des lettres, chiffres, / et -' 
+    return {
+      isValid: false,
+      error: 'Le numéro de permis ne peut contenir que des lettres, chiffres, / et -'
+    };
+  }
+  return { isValid: true, error: '' };
+};
+
+const validateResidencePermit = (value: string): { isValid: boolean; error: string } => {
+  const trimmed = value.trim();
+  if (!trimmed) return { isValid: false, error: 'Le numéro de carte de séjour est requis' };
+  if (trimmed.length < 5 || trimmed.length > 20) {
+    return {
+      isValid: false,
+      error: 'Le numéro de carte de séjour doit contenir entre 5 et 20 caractères'
     };
   }
   return { isValid: true, error: '' };
@@ -75,7 +87,7 @@ const resolveImageSrc = (src?: string) => {
 
 const extrasData = [
   { id: 'child_seat', icon: 'child_care', title: 'Siège Enfant', subtitle: 'Certifié sécurité', price: 100, isPerDay: false },
-  { id: 'driver', icon: 'person_add', title: 'Conducteur Supplémentaire', subtitle: 'Partagez le volant', price: 150, isPerDay: true }
+  { id: 'driver', icon: 'person_add', title: 'Conducteur Supplémentaire', subtitle: 'Partagez le volant', price: 150, isPerDay: false }
 ];
 
 const Reservation: React.FC = () => {
@@ -115,7 +127,7 @@ const Reservation: React.FC = () => {
   const [driverEmail, setDriverEmail] = useState("");
   const [driverId, setDriverId] = useState("");
   const [driverIdError, setDriverIdError] = useState("");
-  const [idType, setIdType] = useState<'passport' | 'nationalId'>('nationalId');
+  const [idType, setIdType] = useState<'passport' | 'nationalId' | 'residencePermit'>('nationalId');
   const [nationalIdCountry, setNationalIdCountry] = useState('MA');
   const [driverLicense, setDriverLicense] = useState("");
   const [driverLicenseError, setDriverLicenseError] = useState("");
@@ -129,7 +141,7 @@ const Reservation: React.FC = () => {
   const [secondDriverPhoneCountry, setSecondDriverPhoneCountry] = useState('ma');
   const [secondDriverId, setSecondDriverId] = useState("");
   const [secondDriverIdError, setSecondDriverIdError] = useState("");
-  const [secondIdType, setSecondIdType] = useState<'passport' | 'nationalId'>('nationalId');
+  const [secondIdType, setSecondIdType] = useState<'passport' | 'nationalId' | 'residencePermit'>('nationalId');
   const [secondNationalIdCountry, setSecondNationalIdCountry] = useState('MA');
   const [secondDriverLicense, setSecondDriverLicense] = useState("");
   const [secondDriverLicenseError, setSecondDriverLicenseError] = useState("");
@@ -258,7 +270,8 @@ const Reservation: React.FC = () => {
     // Calculate total price
     const transmissionExtra = (isConfigurableCar && selectedTransmission === 'Automatique' && car.transmission === 'Manuelle') ? 50 : 0;
     const protectionPlanTotal = (protectionPlan === 'moyen' && days >= 10) ? 1000 : (protectionPlan === 'premium' && days >= 10 ? 2000 : 0);
-    const basePrice = (car.price + transmissionExtra) * days + protectionPlanTotal;
+    const pricePerDay = getCarPrice(car, pickupDate);
+    const basePrice = (pricePerDay + transmissionExtra) * days + protectionPlanTotal;
     const extrasTotal = extrasData
       .filter(e => selectedExtras.includes(e.id))
       .reduce((sum, e) => sum + (e.isPerDay ? e.price * days : e.price), 0);
@@ -274,10 +287,12 @@ const Reservation: React.FC = () => {
     // Validation
     const idValidation = idType === 'passport'
       ? validatePassport(driverId)
-      : validateNationalId(driverId, nationalIdCountry);
+      : idType === 'nationalId'
+        ? validateNationalId(driverId, nationalIdCountry)
+        : validateResidencePermit(driverId);
     const licenseValidation = validateDrivingLicense(driverLicense);
     const phoneValidation = validatePhoneNumber(driverPhone, driverPhoneCountry);
-    
+
     if (!idValidation.isValid) setDriverIdError(idValidation.error);
     if (!licenseValidation.isValid) setDriverLicenseError(licenseValidation.error);
     if (!phoneValidation.isValid) setDriverPhoneError(phoneValidation.error);
@@ -286,8 +301,8 @@ const Reservation: React.FC = () => {
     if (!driverName.trim()) missingPrimary.push("Nom Complet");
     if (!driverPhone.trim()) missingPrimary.push("Téléphone");
     if (!driverEmail.trim()) missingPrimary.push("Email");
-    if (!driverId.trim()) missingPrimary.push(idType === 'passport' ? "Numéro de Passeport" : "Numéro de CIN");
-    else if (!idValidation.isValid) missingPrimary.push(idType === 'passport' ? "Format de passeport invalide" : "Format de CIN invalide");
+    if (!driverId.trim()) missingPrimary.push(idType === 'passport' ? "Numéro de Passeport" : (idType === 'nationalId' ? "Numéro de CIN" : "N° Carte Séjour"));
+    else if (!idValidation.isValid) missingPrimary.push(idType === 'passport' ? "Format de passeport invalide" : (idType === 'nationalId' ? "Format de CIN invalide" : "Format de Carte Séjour invalide"));
     if (!driverLicense.trim()) missingPrimary.push("N° Permis");
     else if (!licenseValidation.isValid) missingPrimary.push("Format de permis invalide");
     if (!driverAge) missingPrimary.push("Âge");
@@ -302,10 +317,12 @@ const Reservation: React.FC = () => {
       // Validate second driver fields
       const secondIdValidation = secondIdType === 'passport'
         ? validatePassport(secondDriverId)
-        : validateNationalId(secondDriverId, secondNationalIdCountry);
+        : secondIdType === 'nationalId'
+          ? validateNationalId(secondDriverId, secondNationalIdCountry)
+          : validateResidencePermit(secondDriverId);
       const secondLicenseValidation = validateDrivingLicense(secondDriverLicense);
       const secondPhoneValidation = validatePhoneNumber(secondDriverPhone, secondDriverPhoneCountry);
-      
+
       if (!secondIdValidation.isValid) setSecondDriverIdError(secondIdValidation.error);
       if (!secondLicenseValidation.isValid) setSecondDriverLicenseError(secondLicenseValidation.error);
       if (!secondPhoneValidation.isValid) setSecondDriverPhoneError(secondPhoneValidation.error);
@@ -313,8 +330,8 @@ const Reservation: React.FC = () => {
       const missingSecondary = [];
       if (!secondDriverName.trim()) missingSecondary.push("Nom Complet");
       if (!secondDriverPhone.trim()) missingSecondary.push("Téléphone");
-      if (!secondDriverId.trim()) missingSecondary.push(secondIdType === 'passport' ? "Numéro de Passeport" : "Numéro de CIN");
-      else if (!secondIdValidation.isValid) missingSecondary.push(secondIdType === 'passport' ? "Format de passeport invalide" : "Format de CIN invalide");
+      if (!secondDriverId.trim()) missingSecondary.push(secondIdType === 'passport' ? "Numéro de Passeport" : (secondIdType === 'nationalId' ? "Numéro de CIN" : "N° Carte Séjour"));
+      else if (!secondIdValidation.isValid) missingSecondary.push(secondIdType === 'passport' ? "Format de passeport invalide" : (secondIdType === 'nationalId' ? "Format de CIN invalide" : "Format de Carte Séjour invalide"));
       if (!secondDriverLicense.trim()) missingSecondary.push("N° Permis");
       else if (!secondLicenseValidation.isValid) missingSecondary.push("Format de permis invalide");
       if (!secondDriverAge) missingSecondary.push("Âge");
@@ -360,6 +377,8 @@ const Reservation: React.FC = () => {
       extras: extrasText,
       protectionPlan: protectionPlan === 'moyen' ? 'Moyen (1000 MAD/Total)' : (protectionPlan === 'premium' ? 'Premium (2000 MAD/Total)' : 'Basique'),
       paymentMethod: paymentMethod === 'cash' ? 'Espèces' : 'TPE/Carte',
+      idTypeLabel: idType === 'passport' ? 'Passeport' : (idType === 'nationalId' ? 'CIN' : 'Carte Séjour'),
+      secondIdTypeLabel: secondIdType === 'passport' ? 'Passeport' : (secondIdType === 'nationalId' ? 'CIN' : 'Carte Séjour'),
       total: grandTotal.toFixed(2),
       date: new Date().toLocaleString()
     };
@@ -398,7 +417,7 @@ const Reservation: React.FC = () => {
 🛣️ *Kilométrage*: ${reservationDetails.mileageType}
 ----------------------------
 👤 *Conducteur*: ${reservationDetails.driverName}
-🆔 *CIN/Pass*: ${reservationDetails.driverId}
+🆔 *${reservationDetails.idTypeLabel || 'ID'}:* ${reservationDetails.driverId}
 🪪 *Permis*: ${reservationDetails.driverLicense}
 →🎂 *Âge*: ${reservationDetails.driverAge} ans
 📱 *Tél*: ${reservationDetails.driverPhone}
@@ -406,7 +425,7 @@ const Reservation: React.FC = () => {
 🏠 *Adr*: ${reservationDetails.driverAddress}
 ${selectedExtras.includes('driver') ? `----------------------------
 👤 *2ème Cond.*: ${reservationDetails.secondDriverName}
-🆔 *CIN/Pass 2*: ${reservationDetails.secondDriverId}
+🆔 *${reservationDetails.secondIdTypeLabel || 'ID'}:* ${reservationDetails.secondDriverId}
 🪪 *Permis 2*: ${reservationDetails.secondDriverLicense}
 →🎂 *Âge 2*: ${reservationDetails.secondDriverAge} ans
 📱 *Tél 2*: ${reservationDetails.secondDriverPhone}
@@ -431,7 +450,7 @@ Merci de confirmer la disponibilité.
   };
 
   const handleWhatsAppAction = () => {
-    const phoneNumber = "212643193316";
+    const phoneNumber = "212675010606";
     const encodedMessage = encodeURIComponent(whatsappMessage);
     window.open(`https://wa.me/${phoneNumber}?text=${encodedMessage}`, '_blank');
   };
@@ -450,7 +469,8 @@ Merci de confirmer la disponibilité.
   // Calculations for display
   const transmissionExtra = (isConfigurableCar && selectedTransmission === 'Automatique' && car.transmission === 'Manuelle') ? 50 : 0;
   const protectionPlanTotal = (protectionPlan === 'moyen' && days >= 10) ? 1000 : (protectionPlan === 'premium' && days >= 10 ? 2000 : 0);
-  const basePrice = (car.price + transmissionExtra) * days + protectionPlanTotal;
+  const pricePerDay = getCarPrice(car, pickupDate);
+  const basePrice = (pricePerDay + transmissionExtra) * days + protectionPlanTotal;
   const extrasTotal = extrasData
     .filter(e => selectedExtras.includes(e.id))
     .reduce((sum, e) => sum + (e.isPerDay ? e.price * days : e.price), 0);
@@ -1124,6 +1144,15 @@ Merci de confirmer la disponibilité.
                         />
                         <span className="ml-2 text-sm text-text-main">Passeport</span>
                       </label>
+                      <label className="flex items-center">
+                        <input
+                          type="radio"
+                          className="form-radio h-4 w-4 text-primary focus:ring-primary border-gray-300"
+                          checked={idType === 'residencePermit'}
+                          onChange={() => setIdType('residencePermit')}
+                        />
+                        <span className="ml-2 text-sm text-text-main">Carte Séjour</span>
+                      </label>
                     </div>
 
                     <div className="flex gap-2">
@@ -1145,7 +1174,7 @@ Merci de confirmer la disponibilité.
                       <div className="flex-1">
                         <input
                           type="text"
-                          placeholder={idType === 'passport' ? 'Numéro de passeport' : 'Numéro de CIN'}
+                          placeholder={idType === 'passport' ? 'Numéro de passeport' : (idType === 'nationalId' ? 'Numéro de CIN' : 'Numéro de Carte de Séjour')}
                           value={driverId}
                           onChange={(e) => {
                             const value = idType === 'passport' ? e.target.value.toUpperCase() : e.target.value;
@@ -1153,14 +1182,18 @@ Merci de confirmer la disponibilité.
                             if (driverIdError) {
                               const validation = idType === 'passport'
                                 ? validatePassport(value)
-                                : validateNationalId(value, nationalIdCountry);
+                                : idType === 'nationalId'
+                                  ? validateNationalId(value, nationalIdCountry)
+                                  : validateResidencePermit(value);
                               setDriverIdError(validation.error);
                             }
                           }}
                           onBlur={() => {
                             const validation = idType === 'passport'
                               ? validatePassport(driverId)
-                              : validateNationalId(driverId, nationalIdCountry);
+                              : idType === 'nationalId'
+                                ? validateNationalId(driverId, nationalIdCountry)
+                                : validateResidencePermit(driverId);
                             setDriverIdError(validation.error);
                           }}
                           className={`w-full h-14 px-4 rounded-xl border ${driverIdError ? 'border-red-500' : 'border-border-color'} bg-background-light focus:ring-2 focus:ring-primary focus:border-primary transition-all text-text-main outline-none font-body`}
@@ -1285,6 +1318,15 @@ Merci de confirmer la disponibilité.
                             />
                             <span className="ml-2 text-sm text-text-main">Passeport</span>
                           </label>
+                          <label className="flex items-center">
+                            <input
+                              type="radio"
+                              className="form-radio h-4 w-4 text-primary focus:ring-primary border-gray-300"
+                              checked={secondIdType === 'residencePermit'}
+                              onChange={() => setSecondIdType('residencePermit')}
+                            />
+                            <span className="ml-2 text-sm text-text-main">Carte Séjour</span>
+                          </label>
                         </div>
 
                         <div className="flex gap-2">
@@ -1306,7 +1348,7 @@ Merci de confirmer la disponibilité.
                           <div className="flex-1">
                             <input
                               type="text"
-                              placeholder={secondIdType === 'passport' ? 'Numéro de passeport' : 'Numéro de CIN'}
+                              placeholder={secondIdType === 'passport' ? 'Numéro de passeport' : (secondIdType === 'nationalId' ? 'Numéro de CIN' : 'Numéro de Carte de Séjour')}
                               value={secondDriverId}
                               onChange={(e) => {
                                 const value = secondIdType === 'passport' ? e.target.value.toUpperCase() : e.target.value;
@@ -1314,14 +1356,18 @@ Merci de confirmer la disponibilité.
                                 if (secondDriverIdError) {
                                   const validation = secondIdType === 'passport'
                                     ? validatePassport(value)
-                                    : validateNationalId(value, secondNationalIdCountry);
+                                    : secondIdType === 'nationalId'
+                                      ? validateNationalId(value, secondNationalIdCountry)
+                                      : validateResidencePermit(value);
                                   setSecondDriverIdError(validation.error);
                                 }
                               }}
                               onBlur={() => {
                                 const validation = secondIdType === 'passport'
                                   ? validatePassport(secondDriverId)
-                                  : validateNationalId(secondDriverId, secondNationalIdCountry);
+                                  : secondIdType === 'nationalId'
+                                    ? validateNationalId(secondDriverId, secondNationalIdCountry)
+                                    : validateResidencePermit(secondDriverId);
                                 setSecondDriverIdError(validation.error);
                               }}
                               className={`w-full h-14 px-4 rounded-xl border ${secondDriverIdError ? 'border-red-500' : 'border-border-color'} bg-background-light focus:ring-2 focus:ring-primary focus:border-primary transition-all text-text-main outline-none font-body`}
@@ -1538,7 +1584,7 @@ Merci de confirmer la disponibilité.
                     </div>
                     <span className="font-bold text-sm">+212 612 100 800</span>
                   </a>
-                  <a href="https://wa.me/212643193316" target="_blank" rel="noreferrer" className="flex items-center gap-3 p-3 rounded-lg bg-white/5 hover:bg-white/10 transition-colors border border-white/10">
+                  <a href="https://wa.me/212675010606" target="_blank" rel="noreferrer" className="flex items-center gap-3 p-3 rounded-lg bg-white/5 hover:bg-white/10 transition-colors border border-white/10">
                     <div className="size-8 rounded-full bg-[#25D366] flex items-center justify-center text-white">
                       <span className="material-symbols-outlined text-sm">chat</span>
                     </div>

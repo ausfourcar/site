@@ -8,12 +8,48 @@ const resolveImageSrc = (src?: string) => {
   return `/${src}`;
 };
 
+export const getCarPrice = (car: any, dateStr?: string) => {
+  const date = dateStr ? new Date(dateStr) : new Date();
+  const day = date.getDate();
+  const month = date.getMonth() + 1; // 1-12
+
+  // High Season: 15/06 to 15/09
+  const isHighSeason = (month === 6 && day >= 15) || (month === 7) || (month === 8) || (month === 9 && day <= 15);
+
+  const carName = car.name.toLowerCase();
+  const isDacia = carName.includes('dacia');
+  const isClio = carName.includes('clio');
+  const is208 = carName.includes('208');
+  const isCorsa = carName.includes('corsa');
+  const isTucson = carName.includes('tucson');
+  // Handle both "Automatique" and "Auto" in names/transmission
+  const isAuto = car.transmission === 'Automatique' || car.transmission === 'Auto' || carName.includes('auto');
+
+  if (isHighSeason) {
+    if (isDacia) return 359;
+    if (isClio && !isAuto) return 449; // Clio Essence/Manuelle
+    if (isTucson) return 800; // Tucson high season
+    return 399; // All others in high season
+  } else {
+    // Low Season
+    if (isClio && !isAuto) return 299;
+    if (isClio && isAuto) return 320;
+    if (is208 && !isAuto) return 299;
+    if (isCorsa) return 299;
+    if (isTucson) return 650; // Tucson low season
+
+    // Fallback to original prices for others (like Tucson, or Dacia if not specified for low season)
+    // We use the price defined in fleetData as fallback
+    return car.basePrice || car.price;
+  }
+};
+
 export const fleetData = [
   {
     id: '1',
-    name: 'Dacia Logan 2024',
+    name: 'Dacia Logan Fastlift',
     category: 'Économique',
-    price: 250,
+    price: 249, // original price for low season
     currency: 'MAD',
     image: '/dacia.jpg',
     fuel: 'Diesel',
@@ -25,7 +61,7 @@ export const fleetData = [
     id: '2',
     name: 'Renault Clio 5',
     category: 'Citadine',
-    price: 350,
+    price: 299, // User said 299 for clio manuelle out of period
     currency: 'MAD',
     image: '/clio.png',
     fuel: 'Diesel',
@@ -37,10 +73,10 @@ export const fleetData = [
     id: '12',
     name: 'Renault Clio 5 Auto',
     category: 'Citadine',
-    price: 400,
+    price: 320, // User said 320 for clio5 auto out of period
     currency: 'MAD',
     image: '/clio.png',
-    fuel: 'Diesel',
+    fuel: 'Essence',
     transmission: 'Automatique',
     seats: 5,
     tag: 'Ville'
@@ -49,39 +85,31 @@ export const fleetData = [
     id: '17',
     name: 'Renault Clio 5 Auto',
     category: 'Citadine',
-    price: 400,
+    price: 320, // User said 320 for clio5 auto out of period
     currency: 'MAD',
     image: '/clio5noir.png',
-    fuel: 'Diesel',
+    fuel: 'Essence',
     transmission: 'Automatique',
     seats: 5,
     tag: 'Ville'
   },
   {
-    id: '3',
+    id: '3-m',
     name: 'Peugeot 208',
     category: 'Compacte',
-    price: 400,
+    price: 299, // User said 299 for 208 manuell out of period
     currency: 'MAD',
     image: '/208blanc.jpg',
-    fuel: 'Essence',
-    transmission: 'Automatique',
+    fuel: 'Diesel',
+    transmission: 'Manuelle',
     seats: 5,
-    tag: 'Ville',
-    popular: true,
-    doors: 5,
-    luggage: 2,
-    airConditioning: true,
-    powerCV: 130,
-    powerKW: 96,
-    co2Emissions: 120,
-    minAge: 21
+    tag: 'Ville'
   },
   {
     id: '5',
     name: 'Hyundai Tucson',
     category: 'SUV',
-    price: 750,
+    price: 650,
     currency: 'MAD',
     image: '/tucson.webp',
     fuel: 'Diesel',
@@ -93,10 +121,10 @@ export const fleetData = [
     id: '7',
     name: 'Opel Corsa',
     category: 'Citadine',
-    price: 299,
+    price: 299, // User said 299 for corsa out of period
     currency: 'MAD',
     image: '/corsa.png',
-    fuel: 'Essence',
+    fuel: 'Diesel',
     transmission: 'Manuelle',
     seats: 5,
     tag: 'Ville'
@@ -106,8 +134,8 @@ export const fleetData = [
 const Fleet: React.FC = () => {
   const [filter, setFilter] = useState('Tout');
 
-  // Find the featured car for the highlight section (Peugeot 208, ID 3)
-  const featuredCar = fleetData.find(car => car.id === '3');
+  // Find the featured car for the highlight section (Clio 5 Auto, ID 12)
+  const featuredCar = fleetData.find(car => car.id === '12');
 
   const filteredFleet = filter === 'Tout'
     ? fleetData
@@ -130,10 +158,10 @@ const Fleet: React.FC = () => {
             </div>
             <h1 className="text-4xl md:text-5xl lg:text-7xl font-display font-bold tracking-tight text-text-main leading-[1.1]">
               Conduisez le Futur <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-accent-orange to-primary bg-[length:200%_auto] animate-pulse">Peugeot 208 GT</span>
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-accent-orange to-primary bg-[length:200%_auto] animate-pulse">Renault Clio 5</span>
             </h1>
             <p className="text-text-secondary text-lg max-w-lg leading-relaxed font-body">
-              Découvrez le mélange parfait d'élégance marocaine et d'ingénierie moderne. La toute nouvelle Peugeot 208 est maintenant disponible pour votre voyage.
+              Découvrez le mélange parfait d'élégance marocaine et de modernité. La Renault Clio 5 est maintenant disponible pour votre voyage, alliant confort et style.
             </p>
             <div className="flex gap-4 pt-2">
               <Link to="/reservation" state={{ car: featuredCar }} className="h-12 px-8 rounded-full bg-primary text-text-main font-bold text-sm shadow-lg shadow-primary/30 hover:shadow-primary/50 hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2">
@@ -200,7 +228,7 @@ const Fleet: React.FC = () => {
                   <h3 className="text-text-main text-xl font-bold font-display">{car.name}</h3>
                 </div>
                 <div className="text-right">
-                  <p className="text-text-main text-lg font-bold font-display">{car.price} {car.currency}</p>
+                  <p className="text-text-main text-lg font-bold font-display">{getCarPrice(car)} {car.currency}</p>
                   <p className="text-text-secondary text-xs font-body">par jour</p>
                 </div>
               </div>
