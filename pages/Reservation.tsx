@@ -106,14 +106,14 @@ const Reservation: React.FC = () => {
     d.setDate(d.getDate() + 1);
     return d.toISOString().split('T')[0];
   });
-  const [pickupTime, setPickupTime] = useState("10:00 AM");
+  const [pickupTime, setPickupTime] = useState("10:00");
 
   const [dropoffDate, setDropoffDate] = useState(() => {
     const d = new Date();
     d.setDate(d.getDate() + 1);
     return d.toISOString().split('T')[0];
   });
-  const [dropoffTime, setDropoffTime] = useState("10:00 AM");
+  const [dropoffTime, setDropoffTime] = useState("10:00");
 
   const [selectedExtras, setSelectedExtras] = useState<string[]>([]);
   const [days, setDays] = useState(0);
@@ -182,26 +182,16 @@ const Reservation: React.FC = () => {
   const timeOptions = [];
   for (let h = 0; h < 24; h++) {
     for (let m = 0; m < 60; m += 30) {
-      const hour = h % 12 || 12;
-      const ampm = h < 12 ? 'AM' : 'PM';
-      timeOptions.push(`${hour}:${m === 0 ? '00' : '30'} ${ampm}`);
+      const hour = h.toString().padStart(2, '0');
+      const minutes = m.toString().padStart(2, '0');
+      timeOptions.push(`${hour}:${minutes}`);
     }
   }
 
-  const convert12to24 = (time12h: string) => {
-    const [time, modifier] = time12h.split(' ');
-    let [hours, minutes] = time.split(':');
-    if (hours === '12') hours = '00';
-    if (modifier === 'PM') hours = String(parseInt(hours, 10) + 12);
-    return `${hours.padStart(2, '0')}:${minutes}`;
-  };
-
   // Calculate days based on both date and time
   useEffect(() => {
-    const start24 = convert12to24(pickupTime);
-    const end24 = convert12to24(dropoffTime);
-    const start = new Date(`${pickupDate}T${start24}`).getTime();
-    const end = new Date(`${dropoffDate}T${end24}`).getTime();
+    const start = new Date(`${pickupDate}T${pickupTime}`).getTime();
+    const end = new Date(`${dropoffDate}T${dropoffTime}`).getTime();
 
     if (start && end && end > start) {
       const diffMs = end - start;
@@ -588,7 +578,7 @@ Merci de confirmer la disponibilité.
                         className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                       />
                     </div>
-                    {/* Time Selector - Custom Dropdown for AM/PM */}
+                    {/* Time Selector - Custom Dropdown for 24h format */}
                     <div
                       className="px-4 pb-3 hover:bg-gray-50 transition-colors relative border-t border-dashed border-gray-100"
                     >
